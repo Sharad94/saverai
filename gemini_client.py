@@ -49,7 +49,7 @@ def generate(contents) -> str:
         response = client().models.generate_content(
             model=FLASH_MODEL, contents=contents, config=_NO_THINKING
         )
-    return response.text
+    return response.text or ""
 
 
 def image_part(image_bytes: bytes, media_type: str = "image/jpeg") -> types.Part:

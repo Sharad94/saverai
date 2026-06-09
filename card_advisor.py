@@ -53,7 +53,7 @@ def advise_best_card(item: str, amount: float, platform: str, cards: list[dict])
 
     best = ranked[0] if ranked else None
     summary = (
-        f"Use your {best['card_label']} — {best['reward_label']}."
+        f"Use your {best.get('card_label','your card')} — {best.get('reward_label','best rewards')}."
         if best else "No cards available."
     )
 
