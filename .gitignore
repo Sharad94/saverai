@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.streamlit/secrets.toml
+*.dec
+test_advisor.py
+import_cards.py
+batch_import.py
