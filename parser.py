@@ -10,7 +10,8 @@ Today's date is {today}. Use this to compute absolute expiry dates from relative
 
 Return a JSON object with these fields (use null if not found):
 {{
-  "platform": "App or store name visible in the screenshot",
+  "platform": "The SOURCE app where this voucher was found/issued e.g. 'CRED', 'Swiggy', 'Paytm', 'Amazon'. NOT the merchant where it's redeemed.",
+  "applicable_on": "The MERCHANT or service where this voucher is redeemed e.g. 'Astrotalk', 'Starbucks', 'Bata'. If the voucher is for use on the same app (e.g. Swiggy food order discount), set this to null.",
   "title": "Short description of the offer",
   "discount_type": "percentage | flat | cashback | free_item | other",
   "discount_value": <number or null>,
@@ -21,7 +22,6 @@ Return a JSON object with these fields (use null if not found):
   "expiry_date": "YYYY-MM-DD absolute date — compute from relative expressions using today's date if needed, else null",
   "expiry_raw": "Exact expiry text from screenshot e.g. 'Valid till 30 Jun 2025' or 'expires in 13 days'",
   "category": "One of: food, shopping, travel, entertainment, groceries, fashion, electronics, health, other",
-  "applicable_on": "What the voucher applies to e.g. 'All electronics above ₹999'",
   "terms": [
     "List of ALL distinct terms/conditions as short strings. Sort by importance: put the 2 most critical ones FIRST (e.g. max discount cap, key restriction, eligibility condition), then the rest. Return [] if none found."
   ]
@@ -46,7 +46,8 @@ Today's date is {today}. Use this to compute absolute expiry dates from relative
 
 Extract all voucher details from the text below and return a JSON object with these fields (use null if not found):
 {{
-  "platform": "App or store name",
+  "platform": "The SOURCE app where this voucher was found/issued e.g. 'CRED', 'Swiggy', 'Paytm'. NOT the merchant where it's redeemed.",
+  "applicable_on": "The MERCHANT or service where this voucher is redeemed e.g. 'Astrotalk', 'Starbucks'. Null if used on same platform.",
   "title": "Short description of the offer",
   "discount_type": "percentage | flat | cashback | free_item | other",
   "discount_value": <number or null>,
@@ -57,7 +58,6 @@ Extract all voucher details from the text below and return a JSON object with th
   "expiry_date": "YYYY-MM-DD absolute date, else null",
   "expiry_raw": "Expiry text as given",
   "category": "One of: food, shopping, travel, entertainment, groceries, fashion, electronics, health, other",
-  "applicable_on": "What the voucher applies to",
   "terms": ["List of important terms/conditions, most critical first. Return [] if none."]
 }}
 

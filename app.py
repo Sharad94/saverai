@@ -257,6 +257,7 @@ def _render_voucher_card(v: dict, highlight: bool = False, key_prefix: str = "v"
         is_expiring_soon = 0 <= days_left <= 3
 
     platform = v.get("platform") or "Unknown"
+    merchant = v.get("applicable_on") or ""
     discount = v.get("discount_label") or ""
     category = v.get("category") or ""
     promo = v.get("promo_code")
@@ -288,6 +289,7 @@ def _render_voucher_card(v: dict, highlight: bool = False, key_prefix: str = "v"
     vid = v["id"]
     title_text = html.escape(v.get("title") or "")
     platform_esc = html.escape(platform)
+    merchant_esc = html.escape(merchant)
     discount_esc = html.escape(discount)
     expiry_esc = html.escape(expiry_text)
     category_esc = html.escape(category)
@@ -438,9 +440,10 @@ def _render_voucher_card(v: dict, highlight: bool = False, key_prefix: str = "v"
 <div class="card">
   <div class="row">
     <div>
-      <span class="title">{title_text if title_text else platform_esc}</span>
+      <span class="title">{title_text if title_text else (merchant_esc or platform_esc)}</span>
       <span class="cat-badge">{category_esc}</span>
-      {"<span class='app-label'>App: " + platform_esc + "</span>" if title_text else ""}
+      {"<span class='app-label'>via " + platform_esc + "</span>" if merchant_esc else ("<span class='app-label'>App: " + platform_esc + "</span>" if title_text else "")}
+      {"<span class='app-label' style='color:#a78bfa'>🎯 " + merchant_esc + "</span>" if merchant_esc else ""}
     </div>
     <div>
       <div class="discount">{discount_esc}</div>
