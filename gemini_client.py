@@ -11,14 +11,21 @@ _client_lock = threading.Lock()
 _api_semaphore = threading.Semaphore(5)
 
 
-def _get_api_key() -> str | None:
+def _get_service_account_credentials():
+    """Load GCP service account credentials from Streamlit secrets."""
     try:
+        import json
         import streamlit as st
-        if "GEMINI_API_KEY" in st.secrets:
-            return st.secrets["GEMINI_API_KEY"]
+        from google.oauth2 import service_account
+        if "GCP_SERVICE_ACCOUNT" in st.secrets:
+            sa = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+            creds = service_account.Credentials.from_service_account_info(
+                sa, scopes=["https://www.googleapis.com/auth/cloud-platform"]
+            )
+            return creds, sa.get("project_id")
     except Exception:
         pass
-    return os.environ.get("GEMINI_API_KEY")
+    return None, None
 
 
 def client() -> genai.Client:
@@ -26,10 +33,17 @@ def client() -> genai.Client:
     if _client is None:
         with _client_lock:
             if _client is None:
-                api_key = _get_api_key()
-                if api_key:
-                    _client = genai.Client(api_key=api_key)
+                # 1. Try service account (hosted on Streamlit Cloud)
+                creds, project_id = _get_service_account_credentials()
+                if creds:
+                    _client = genai.Client(
+                        vertexai=True,
+                        project=project_id,
+                        location="us-central1",
+                        credentials=creds,
+                    )
                 else:
+                    # 2. Fallback: local ADC (Vertex AI via gcloud)
                     _client = genai.Client(
                         vertexai=True,
                         project=os.environ.get("GCP_PROJECT", "integration-us-central1-687416"),
