@@ -5,6 +5,7 @@ from google import genai
 from google.genai import types
 
 FLASH_MODEL = "gemini-2.5-flash"
+FALLBACK_MODEL = "gemini-2.0-flash"
 
 _client: genai.Client | None = None
 _client_lock = threading.Lock()
@@ -45,13 +46,21 @@ _NO_THINKING = types.GenerateContentConfig(
 )
 
 
-def generate(contents) -> str:
+def generate(contents, model: str = FLASH_MODEL) -> str:
     """Generate text from contents (str or list of Parts + str)."""
     with _api_semaphore:
-        response = client().models.generate_content(
-            model=FLASH_MODEL, contents=contents, config=_NO_THINKING
-        )
-    return response.text or ""
+        try:
+            response = client().models.generate_content(
+                model=model, contents=contents, config=_NO_THINKING
+            )
+            return response.text or ""
+        except Exception as e:
+            if model == FLASH_MODEL:
+                response = client().models.generate_content(
+                    model=FALLBACK_MODEL, contents=contents, config=_NO_THINKING
+                )
+                return response.text or ""
+            raise
 
 
 def image_part(image_bytes: bytes, media_type: str = "image/jpeg") -> types.Part:

@@ -444,7 +444,7 @@ def _render_voucher_card(v: dict, highlight: bool = False, key_prefix: str = "v"
       <span class="title">{title_text if title_text else (merchant_esc or platform_esc)}</span>
       <span class="cat-badge">{category_esc}</span>
       {"<span class='app-label'>via " + platform_esc + "</span>" if merchant_esc else ("<span class='app-label'>App: " + platform_esc + "</span>" if title_text else "")}
-      {"<span class='app-label' style='color:#a78bfa'>🎯 " + merchant_esc + "</span>" if merchant_esc else ""}
+      {"<span class='app-label' style='color:#a78bfa;font-size:0.9rem;font-weight:600'>🎯 " + merchant_esc + "</span>" if merchant_esc else ""}
     </div>
     <div>
       <div class="discount">{discount_esc}</div>
@@ -999,7 +999,11 @@ with tab_get_card:
         owned = get_all_cards()
 
         with st.spinner("🧠 Analysing your spend profile..."):
-            result = recommend_cards(spend, owned)
+            try:
+                result = recommend_cards(spend, owned)
+            except Exception as e:
+                st.error(f"Gemini error — please try again in a few seconds. ({type(e).__name__})")
+                result = {}
 
         owned_labels = {f"{c['bank_name']} {c['card_name']}".lower() for c in owned}
 
@@ -1007,20 +1011,21 @@ with tab_get_card:
         combo = result.get("best_combo")
 
         if not top_cards:
-            st.error("Could not generate recommendations. Try again.")
+            err = result.get("_error", "")
+            st.error(f"Could not generate recommendations — please try again. {('(' + err + ')') if err else ''}")
         else:
             st.markdown("#### 🏆 Best Individual Cards")
-            for i, card in enumerate(top_cards):
+
+            def _rec_card_html(card, i, owned_labels):
                 label = f"{card.get('bank','')} {card.get('card','')}".strip()
                 already = card.get("already_owned") or label.lower() in owned_labels
                 medal = "🥇" if i == 0 else ("🥈" if i == 1 else "🥉")
                 annual_fee = card.get("annual_fee") or 0
                 net = card.get("net_annual_benefit") or 0
                 annual_savings = card.get("estimated_annual_savings") or 0
-
+                border = f"border:1px solid {T['primary']};" if i == 0 else "border:1px solid #ffffff15;"
                 cat_rows = "".join(
-                    f'<div style="display:flex;justify-content:space-between;'
-                    f'font-size:0.82rem;color:#94a3b8;margin:3px 0">'
+                    f'<div style="display:flex;justify-content:space-between;font-size:0.82rem;color:#94a3b8;margin:3px 0">'
                     f'<span>{html.escape(b.get("category",""))}</span>'
                     f'<span style="color:{T["primary_light"]}">{html.escape(b.get("benefit",""))}'
                     f' <b style="color:#4ade80">+₹{b.get("monthly_saving",0):,.0f}/mo</b></span></div>'
@@ -1030,63 +1035,62 @@ with tab_get_card:
                     f'<div style="color:#64748b;font-size:0.76rem;margin:2px 0">• {html.escape(t)}</div>'
                     for t in (card.get("key_tnc") or [])
                 )
-                owned_badge = (f'<span style="background:#14532d;color:#4ade80;border-radius:4px;'
-                               f'padding:1px 8px;font-size:0.72rem;margin-left:8px">✓ You have this</span>'
-                               if already else "")
-                waiver = f'<div style="color:#64748b;font-size:0.78rem;margin-top:2px">{html.escape(card.get("fee_waiver",""))}</div>' if card.get("fee_waiver") else ""
-
-                st.markdown(f"""
-<div class="card-chip" style="{'border-color:'+T['primary'] if i==0 else ''}">
+                owned_badge = (
+                    '<span style="background:#14532d;color:#4ade80;border-radius:4px;padding:1px 8px;font-size:0.72rem;margin-left:8px">✓ You have this</span>'
+                    if already else ""
+                )
+                waiver = (
+                    f'<div style="color:#64748b;font-size:0.78rem;margin-top:2px">{html.escape(card.get("fee_waiver",""))}</div>'
+                    if card.get("fee_waiver") else ""
+                )
+                return f"""
+<div style="background:#1e293b;{border}border-radius:12px;padding:14px 16px;margin-bottom:10px;font-family:sans-serif">
   <div style="display:flex;justify-content:space-between;align-items:flex-start">
-    <div>
+    <div style="flex:1">
       <span style="font-size:1.05rem;font-weight:700;color:#f0f0f0">{medal} {html.escape(label)}</span>
       {owned_badge}
-      <div style="color:#94a3b8;font-size:0.8rem;margin-top:3px">{html.escape(card.get('why',''))}</div>
+      <div style="color:#94a3b8;font-size:0.8rem;margin-top:4px">{html.escape(card.get('why',''))}</div>
     </div>
-    <div style="text-align:right;flex-shrink:0;margin-left:12px">
+    <div style="text-align:right;flex-shrink:0;margin-left:16px">
       <div style="color:#4ade80;font-weight:700;font-size:1rem">₹{annual_savings:,.0f}/yr saved</div>
       <div style="color:#64748b;font-size:0.78rem">Fee: ₹{annual_fee:,.0f} · Net: ₹{net:,.0f}</div>
     </div>
   </div>
-  <div style="margin-top:10px;border-top:1px solid #ffffff0d;padding-top:8px">
-    {cat_rows}
-  </div>
+  <div style="margin-top:10px;border-top:1px solid #ffffff0d;padding-top:8px">{cat_rows}</div>
   {f'<div style="margin-top:8px;border-top:1px solid #ffffff0d;padding-top:6px">{tnc_rows}</div>' if tnc_rows else ''}
   <div style="margin-top:6px;color:#64748b;font-size:0.78rem">Annual fee: ₹{annual_fee:,.0f} {waiver}</div>
-</div>
-                """, unsafe_allow_html=True)
+</div>"""
+
+            cards_html = "".join(_rec_card_html(c, i, owned_labels) for i, c in enumerate(top_cards))
+            components.html(f"<div style='background:transparent'>{cards_html}</div>",
+                            height=len(top_cards) * 200 + 20, scrolling=False)
 
             if combo:
-                st.divider()
                 st.markdown("#### 🃏 Best 2-Card Combo")
-                combo_cards = " + ".join(combo.get("cards") or [])
+                combo_cards_label = " + ".join(combo.get("cards") or [])
                 combined_savings = combo.get("combined_annual_savings") or 0
                 combined_fees = combo.get("combined_annual_fees") or 0
                 net_combo = combo.get("net_annual_benefit") or 0
-
                 split_rows = "".join(
-                    f'<div style="display:flex;justify-content:space-between;font-size:0.82rem;'
-                    f'color:#94a3b8;margin:3px 0">'
+                    f'<div style="display:flex;justify-content:space-between;font-size:0.82rem;color:#94a3b8;margin:3px 0">'
                     f'<span style="color:{T["accent"]};font-weight:600">{html.escape(s.get("card",""))}</span>'
                     f'<span>Use for: {html.escape(", ".join(s.get("use_for",[])))}'
                     f' · <b style="color:#4ade80">+₹{s.get("monthly_saving",0):,.0f}/mo</b></span></div>'
                     for s in (combo.get("split") or [])
                 )
-
-                st.markdown(f"""
-<div class="card-chip" style="border-color:{T['accent']}55">
+                combo_html = f"""
+<div style="background:#1e293b;border:1px solid {T['accent']}55;border-radius:12px;padding:14px 16px;font-family:sans-serif">
   <div style="display:flex;justify-content:space-between;align-items:flex-start">
-    <div>
-      <span style="font-size:1.05rem;font-weight:700;color:#f0f0f0">🃏 {html.escape(combo_cards)}</span>
-      <div style="color:#94a3b8;font-size:0.8rem;margin-top:3px">{html.escape(combo.get('why',''))}</div>
+    <div style="flex:1">
+      <span style="font-size:1.05rem;font-weight:700;color:#f0f0f0">🃏 {html.escape(combo_cards_label)}</span>
+      <div style="color:#94a3b8;font-size:0.8rem;margin-top:4px">{html.escape(combo.get('why',''))}</div>
     </div>
-    <div style="text-align:right;flex-shrink:0;margin-left:12px">
+    <div style="text-align:right;flex-shrink:0;margin-left:16px">
       <div style="color:#4ade80;font-weight:700;font-size:1rem">₹{combined_savings:,.0f}/yr saved</div>
       <div style="color:#64748b;font-size:0.78rem">Fees: ₹{combined_fees:,.0f} · Net: ₹{net_combo:,.0f}</div>
     </div>
   </div>
-  <div style="margin-top:10px;border-top:1px solid #ffffff0d;padding-top:8px">
-    {split_rows}
-  </div>
-</div>
-                """, unsafe_allow_html=True)
+  <div style="margin-top:10px;border-top:1px solid #ffffff0d;padding-top:8px">{split_rows}</div>
+</div>"""
+                components.html(f"<div style='background:transparent'>{combo_html}</div>",
+                                height=180 + len(combo.get("split") or []) * 28, scrolling=False)

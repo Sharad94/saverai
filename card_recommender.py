@@ -1,56 +1,24 @@
 import json
 import re
 
-from gemini_client import generate
+from gemini_client import generate, FALLBACK_MODEL
 
-RECOMMEND_PROMPT = """You are an expert Indian credit card advisor. A user wants to know which credit card(s) to GET based on their monthly spending.
+RECOMMEND_PROMPT = """Indian credit card advisor. Recommend cards to GET based on monthly spend.
 
-Monthly spend profile:
+Spend profile:
 {spend_profile}
 
-Cards they already own:
-{owned_cards}
+Already owns: {owned_cards}
 
-Analyse this spend profile and recommend:
-1. The TOP 3 individual cards to get (Indian market, 2024-2025)
-2. The BEST 2-card combo that maximises savings across all categories
+Return ONLY valid JSON, no markdown:
+{{"top_cards":[{{"bank":"","card":"","network":"","annual_fee":0,"fee_waiver":"","already_owned":false,"estimated_monthly_savings":0,"estimated_annual_savings":0,"net_annual_benefit":0,"category_benefits":[{{"category":"","benefit":"","monthly_saving":0}}],"key_tnc":[],"why":""}}],"best_combo":{{"cards":[],"combined_monthly_savings":0,"combined_annual_savings":0,"combined_annual_fees":0,"net_annual_benefit":0,"split":[{{"card":"","use_for":[],"monthly_saving":0}}],"why":""}}}}
 
-For each card consider: cashback/rewards rate per category, annual fee, welcome benefits, and whether the annual fee is justified by the savings.
-
-Return ONLY this JSON:
-{{
-  "top_cards": [
-    {{
-      "bank": "e.g. HDFC Bank",
-      "card": "e.g. Millennia Credit Card",
-      "network": "Visa/Mastercard/Amex/Rupay",
-      "annual_fee": 1000,
-      "fee_waiver": "Spend ₹1L/year to waive",
-      "already_owned": false,
-      "estimated_monthly_savings": 850,
-      "estimated_annual_savings": 10200,
-      "net_annual_benefit": 9200,
-      "category_benefits": [
-        {{"category": "Food delivery", "benefit": "5% cashback on Swiggy & Zomato", "monthly_saving": 250}},
-        {{"category": "Amazon", "benefit": "5% cashback", "monthly_saving": 300}}
-      ],
-      "key_tnc": ["Cashback capped at ₹1000/month", "Min transaction ₹2000"],
-      "why": "One line reason this card suits their spend profile"
-    }}
-  ],
-  "best_combo": {{
-    "cards": ["HDFC Millennia", "Axis Flipkart"],
-    "combined_monthly_savings": 1400,
-    "combined_annual_savings": 16800,
-    "combined_annual_fees": 2000,
-    "net_annual_benefit": 14800,
-    "split": [
-      {{"card": "HDFC Millennia", "use_for": ["Amazon", "Food delivery"], "monthly_saving": 800}},
-      {{"card": "Axis Flipkart", "use_for": ["Flipkart", "Myntra"], "monthly_saving": 600}}
-    ],
-    "why": "One line reason this combo maximises their savings"
-  }}
-}}"""
+Rules:
+- top_cards: exactly 3 best Indian cards for this spend (2024-2025), prioritise high net_annual_benefit
+- best_combo: best 2-card combination, assign each spend category to the card that maximises reward
+- already_owned: true if card is in the owned list
+- All rupee values as integers
+- key_tnc: max 2 items, most important caps/restrictions only"""
 
 
 def recommend_cards(spend: dict, owned_cards: list[dict]) -> dict:
@@ -62,10 +30,12 @@ def recommend_cards(spend: dict, owned_cards: list[dict]) -> dict:
     ) or "None"
 
     prompt = RECOMMEND_PROMPT.format(spend_profile=spend_profile, owned_cards=owned)
-    raw = generate(prompt).strip()
+    raw = generate(prompt, model=FALLBACK_MODEL).strip()
     raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
     raw = re.sub(r"\s*```$", "", raw, flags=re.MULTILINE)
     try:
         return json.loads(raw.strip())
-    except (json.JSONDecodeError, ValueError):
-        return {"top_cards": [], "best_combo": None}
+    except (json.JSONDecodeError, ValueError) as e:
+        import sys
+        print(f"[card_recommender] JSON parse failed: {e}\nRaw response:\n{raw[:500]}", file=sys.stderr)
+        return {"top_cards": [], "best_combo": None, "_error": str(e)}
