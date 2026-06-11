@@ -28,12 +28,22 @@ def _get_service_account_credentials():
     return None, None
 
 
+def _get_api_key() -> str | None:
+    try:
+        import streamlit as st
+        if "GEMINI_API_KEY" in st.secrets:
+            return st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        pass
+    return os.environ.get("GEMINI_API_KEY")
+
+
 def client() -> genai.Client:
     global _client
     if _client is None:
         with _client_lock:
             if _client is None:
-                # 1. Try service account (hosted on Streamlit Cloud)
+                # 1. Service account (Streamlit Cloud with GCP_SERVICE_ACCOUNT secret)
                 creds, project_id = _get_service_account_credentials()
                 if creds:
                     _client = genai.Client(
@@ -43,12 +53,17 @@ def client() -> genai.Client:
                         credentials=creds,
                     )
                 else:
-                    # 2. Fallback: local ADC (Vertex AI via gcloud)
-                    _client = genai.Client(
-                        vertexai=True,
-                        project=os.environ.get("GCP_PROJECT", "integration-us-central1-687416"),
-                        location=os.environ.get("GCP_LOCATION", "us-central1"),
-                    )
+                    # 2. Plain API key (fallback for Streamlit Cloud)
+                    api_key = _get_api_key()
+                    if api_key:
+                        _client = genai.Client(api_key=api_key)
+                    else:
+                        # 3. Local ADC via gcloud
+                        _client = genai.Client(
+                            vertexai=True,
+                            project=os.environ.get("GCP_PROJECT", "integration-us-central1-687416"),
+                            location=os.environ.get("GCP_LOCATION", "us-central1"),
+                        )
     return _client
 
 
