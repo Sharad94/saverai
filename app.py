@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 from parser import parse_voucher_screenshot, parse_voucher_text
 from card_parser import parse_card_benefits, parse_card_from_name
+from card_recommender import recommend_cards
 from card_advisor import advise_best_card
 from database import (
     save_voucher, get_all_vouchers, mark_used, delete_voucher,
@@ -587,12 +588,13 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-tab_smart, tab_add_voucher, tab_vouchers, tab_add_card, tab_cards = st.tabs([
+tab_smart, tab_add_voucher, tab_vouchers, tab_add_card, tab_cards, tab_get_card = st.tabs([
     "🎯 Smart Advisor",
     "➕ Add Voucher",
     "🎟️ My Vouchers",
     "💳 Add Card",
     "💳 My Cards",
+    "💡 Get a Card",
 ])
 
 
@@ -940,3 +942,151 @@ with tab_cards:
         st.caption(f"{len(cards)} card(s)")
         for c in cards:
             _render_card(c)
+
+
+# ── GET A CARD ────────────────────────────────────────────────────────────────
+SPEND_CATEGORIES = [
+    "Food delivery (Swiggy/Zomato)",
+    "Amazon",
+    "Flipkart",
+    "Groceries",
+    "Fuel",
+    "Travel & Flights",
+    "Movies & Entertainment",
+    "Dining out",
+    "Fashion & Clothing",
+    "Electronics",
+    "Utilities & Bills",
+    "Other online shopping",
+]
+
+with tab_get_card:
+    st.markdown("#### Tell us how you spend monthly")
+    st.caption("We'll recommend the best card(s) to get for maximum savings.")
+
+    # Dynamic spend rows
+    if "spend_rows" not in st.session_state:
+        st.session_state["spend_rows"] = [
+            {"cat": "Food delivery (Swiggy/Zomato)", "amt": 3000},
+            {"cat": "Amazon", "amt": 5000},
+            {"cat": "Fuel", "amt": 2000},
+        ]
+
+    rows = st.session_state["spend_rows"]
+    to_delete = None
+    for i, row in enumerate(rows):
+        c1, c2, c3 = st.columns([4, 2, 0.5])
+        rows[i]["cat"] = c1.selectbox("Category", SPEND_CATEGORIES,
+                                       index=SPEND_CATEGORIES.index(row["cat"]) if row["cat"] in SPEND_CATEGORIES else 0,
+                                       key=f"scat_{i}", label_visibility="collapsed")
+        rows[i]["amt"] = c2.number_input("₹/month", min_value=0, step=500, value=int(row["amt"]),
+                                          key=f"samt_{i}", label_visibility="collapsed")
+        if c3.button("✕", key=f"sdel_{i}"):
+            to_delete = i
+
+    if to_delete is not None:
+        st.session_state["spend_rows"].pop(to_delete)
+        st.rerun()
+
+    if st.button("＋ Add category", key="sadd"):
+        st.session_state["spend_rows"].append({"cat": SPEND_CATEGORIES[0], "amt": 1000})
+        st.rerun()
+
+    st.divider()
+
+    if st.button("Find best card(s) for me →", type="primary", use_container_width=True):
+        spend = {r["cat"]: r["amt"] for r in rows if r["amt"] > 0}
+        owned = get_all_cards()
+
+        with st.spinner("🧠 Analysing your spend profile..."):
+            result = recommend_cards(spend, owned)
+
+        owned_labels = {f"{c['bank_name']} {c['card_name']}".lower() for c in owned}
+
+        top_cards = result.get("top_cards") or []
+        combo = result.get("best_combo")
+
+        if not top_cards:
+            st.error("Could not generate recommendations. Try again.")
+        else:
+            st.markdown("#### 🏆 Best Individual Cards")
+            for i, card in enumerate(top_cards):
+                label = f"{card.get('bank','')} {card.get('card','')}".strip()
+                already = card.get("already_owned") or label.lower() in owned_labels
+                medal = "🥇" if i == 0 else ("🥈" if i == 1 else "🥉")
+                annual_fee = card.get("annual_fee") or 0
+                net = card.get("net_annual_benefit") or 0
+                annual_savings = card.get("estimated_annual_savings") or 0
+
+                cat_rows = "".join(
+                    f'<div style="display:flex;justify-content:space-between;'
+                    f'font-size:0.82rem;color:#94a3b8;margin:3px 0">'
+                    f'<span>{html.escape(b.get("category",""))}</span>'
+                    f'<span style="color:{T["primary_light"]}">{html.escape(b.get("benefit",""))}'
+                    f' <b style="color:#4ade80">+₹{b.get("monthly_saving",0):,.0f}/mo</b></span></div>'
+                    for b in (card.get("category_benefits") or [])
+                )
+                tnc_rows = "".join(
+                    f'<div style="color:#64748b;font-size:0.76rem;margin:2px 0">• {html.escape(t)}</div>'
+                    for t in (card.get("key_tnc") or [])
+                )
+                owned_badge = (f'<span style="background:#14532d;color:#4ade80;border-radius:4px;'
+                               f'padding:1px 8px;font-size:0.72rem;margin-left:8px">✓ You have this</span>'
+                               if already else "")
+                waiver = f'<div style="color:#64748b;font-size:0.78rem;margin-top:2px">{html.escape(card.get("fee_waiver",""))}</div>' if card.get("fee_waiver") else ""
+
+                st.markdown(f"""
+<div class="card-chip" style="{'border-color:'+T['primary'] if i==0 else ''}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <span style="font-size:1.05rem;font-weight:700;color:#f0f0f0">{medal} {html.escape(label)}</span>
+      {owned_badge}
+      <div style="color:#94a3b8;font-size:0.8rem;margin-top:3px">{html.escape(card.get('why',''))}</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;margin-left:12px">
+      <div style="color:#4ade80;font-weight:700;font-size:1rem">₹{annual_savings:,.0f}/yr saved</div>
+      <div style="color:#64748b;font-size:0.78rem">Fee: ₹{annual_fee:,.0f} · Net: ₹{net:,.0f}</div>
+    </div>
+  </div>
+  <div style="margin-top:10px;border-top:1px solid #ffffff0d;padding-top:8px">
+    {cat_rows}
+  </div>
+  {f'<div style="margin-top:8px;border-top:1px solid #ffffff0d;padding-top:6px">{tnc_rows}</div>' if tnc_rows else ''}
+  <div style="margin-top:6px;color:#64748b;font-size:0.78rem">Annual fee: ₹{annual_fee:,.0f} {waiver}</div>
+</div>
+                """, unsafe_allow_html=True)
+
+            if combo:
+                st.divider()
+                st.markdown("#### 🃏 Best 2-Card Combo")
+                combo_cards = " + ".join(combo.get("cards") or [])
+                combined_savings = combo.get("combined_annual_savings") or 0
+                combined_fees = combo.get("combined_annual_fees") or 0
+                net_combo = combo.get("net_annual_benefit") or 0
+
+                split_rows = "".join(
+                    f'<div style="display:flex;justify-content:space-between;font-size:0.82rem;'
+                    f'color:#94a3b8;margin:3px 0">'
+                    f'<span style="color:{T["accent"]};font-weight:600">{html.escape(s.get("card",""))}</span>'
+                    f'<span>Use for: {html.escape(", ".join(s.get("use_for",[])))}'
+                    f' · <b style="color:#4ade80">+₹{s.get("monthly_saving",0):,.0f}/mo</b></span></div>'
+                    for s in (combo.get("split") or [])
+                )
+
+                st.markdown(f"""
+<div class="card-chip" style="border-color:{T['accent']}55">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <span style="font-size:1.05rem;font-weight:700;color:#f0f0f0">🃏 {html.escape(combo_cards)}</span>
+      <div style="color:#94a3b8;font-size:0.8rem;margin-top:3px">{html.escape(combo.get('why',''))}</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;margin-left:12px">
+      <div style="color:#4ade80;font-weight:700;font-size:1rem">₹{combined_savings:,.0f}/yr saved</div>
+      <div style="color:#64748b;font-size:0.78rem">Fees: ₹{combined_fees:,.0f} · Net: ₹{net_combo:,.0f}</div>
+    </div>
+  </div>
+  <div style="margin-top:10px;border-top:1px solid #ffffff0d;padding-top:8px">
+    {split_rows}
+  </div>
+</div>
+                """, unsafe_allow_html=True)

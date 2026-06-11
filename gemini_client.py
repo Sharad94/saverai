@@ -11,22 +11,6 @@ _client_lock = threading.Lock()
 _api_semaphore = threading.Semaphore(5)
 
 
-def _get_service_account_credentials():
-    """Load GCP service account credentials from Streamlit secrets (TOML section)."""
-    try:
-        import streamlit as st
-        from google.oauth2 import service_account
-        if "GCP_SERVICE_ACCOUNT" in st.secrets:
-            sa = dict(st.secrets["GCP_SERVICE_ACCOUNT"])
-            creds = service_account.Credentials.from_service_account_info(
-                sa, scopes=["https://www.googleapis.com/auth/cloud-platform"]
-            )
-            return creds, sa.get("project_id")
-    except Exception:
-        pass
-    return None, None
-
-
 def _get_api_key() -> str | None:
     try:
         import streamlit as st
@@ -42,27 +26,17 @@ def client() -> genai.Client:
     if _client is None:
         with _client_lock:
             if _client is None:
-                # 1. Service account (Streamlit Cloud with GCP_SERVICE_ACCOUNT secret)
-                creds, project_id = _get_service_account_credentials()
-                if creds:
+                api_key = _get_api_key()
+                if api_key:
+                    # Hosted: use free Gemini API key
+                    _client = genai.Client(api_key=api_key)
+                else:
+                    # Local: use Vertex AI via gcloud ADC
                     _client = genai.Client(
                         vertexai=True,
-                        project=project_id,
-                        location="us-central1",
-                        credentials=creds,
+                        project=os.environ.get("GCP_PROJECT", "integration-us-central1-687416"),
+                        location=os.environ.get("GCP_LOCATION", "us-central1"),
                     )
-                else:
-                    # 2. Plain API key (fallback for Streamlit Cloud)
-                    api_key = _get_api_key()
-                    if api_key:
-                        _client = genai.Client(api_key=api_key)
-                    else:
-                        # 3. Local ADC via gcloud
-                        _client = genai.Client(
-                            vertexai=True,
-                            project=os.environ.get("GCP_PROJECT", "integration-us-central1-687416"),
-                            location=os.environ.get("GCP_LOCATION", "us-central1"),
-                        )
     return _client
 
 
