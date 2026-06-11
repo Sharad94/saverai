@@ -12,13 +12,12 @@ _api_semaphore = threading.Semaphore(5)
 
 
 def _get_service_account_credentials():
-    """Load GCP service account credentials from Streamlit secrets."""
+    """Load GCP service account credentials from Streamlit secrets (TOML section)."""
     try:
-        import json
         import streamlit as st
         from google.oauth2 import service_account
         if "GCP_SERVICE_ACCOUNT" in st.secrets:
-            sa = json.loads(st.secrets["GCP_SERVICE_ACCOUNT"])
+            sa = dict(st.secrets["GCP_SERVICE_ACCOUNT"])
             creds = service_account.Credentials.from_service_account_info(
                 sa, scopes=["https://www.googleapis.com/auth/cloud-platform"]
             )
