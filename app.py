@@ -975,34 +975,81 @@ _PROFILE_DINING = [
     {"cat": "Dining out", "amt": 8000},
 ]
 
+CATEGORY_ICONS = {
+    "Food delivery (Swiggy/Zomato)": "🍔",
+    "Amazon": "📦",
+    "Flipkart": "🛒",
+    "Groceries": "🥦",
+    "Fuel": "⛽",
+    "Travel (flights/hotels)": "✈️",
+    "Travel & Flights": "✈️",
+    "Movies & Entertainment": "🎬",
+    "Dining out": "🍽️",
+    "Fashion & Clothing": "👗",
+    "Electronics": "💻",
+    "Utilities & Bills": "💡",
+    "Other online shopping": "🛍️",
+}
+
 with tab_get_card:
-    st.markdown("#### Tell us how you spend monthly")
-    st.caption("We'll recommend the best card(s) to get for maximum savings.")
+    st.markdown(f"""
+<div style="background:linear-gradient(135deg,{T['card']} 0%,{T['card2']} 100%);
+     border:1px solid #ffffff10;border-radius:16px;padding:22px 24px 18px;margin-bottom:20px">
+  <div style="font-size:1.3rem;font-weight:700;color:#f0f0f0;margin-bottom:4px">
+    💡 Find Your Perfect Card
+  </div>
+  <div style="color:#64748b;font-size:0.88rem">
+    Enter your monthly spends — we'll tell you exactly which card to get and how much you'll save.
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
     if "spend_rows" not in st.session_state:
         st.session_state["spend_rows"] = [r.copy() for r in _PROFILE_TRAVEL]
 
     rows = st.session_state["spend_rows"]
+
+    # Column headers
+    h1, h2, h3 = st.columns([4, 2, 0.5])
+    h1.markdown('<div style="color:#64748b;font-size:0.75rem;font-weight:600;padding-left:4px;margin-bottom:2px">CATEGORY</div>', unsafe_allow_html=True)
+    h2.markdown('<div style="color:#64748b;font-size:0.75rem;font-weight:600;padding-left:4px;margin-bottom:2px">₹ / MONTH</div>', unsafe_allow_html=True)
+
     to_delete = None
     for i, row in enumerate(rows):
         c1, c2, c3 = st.columns([4, 2, 0.5])
-        rows[i]["cat"] = c1.selectbox("Category", SPEND_CATEGORIES,
-                                       index=SPEND_CATEGORIES.index(row["cat"]) if row["cat"] in SPEND_CATEGORIES else 0,
-                                       key=f"scat_{i}", label_visibility="collapsed")
+        icon = CATEGORY_ICONS.get(row["cat"], "💳")
+        cat_options = [f"{CATEGORY_ICONS.get(c, '💳')} {c}" for c in SPEND_CATEGORIES]
+        raw_cat = row["cat"]
+        display_option = f"{CATEGORY_ICONS.get(raw_cat, '💳')} {raw_cat}"
+        selected = c1.selectbox("Category", cat_options,
+                                index=cat_options.index(display_option) if display_option in cat_options else 0,
+                                key=f"scat_{i}", label_visibility="collapsed")
+        rows[i]["cat"] = selected.split(" ", 1)[1] if " " in selected else selected
         rows[i]["amt"] = c2.number_input("₹/month", min_value=0, step=500, value=int(row["amt"]),
                                           key=f"samt_{i}", label_visibility="collapsed")
-        if c3.button("✕", key=f"sdel_{i}"):
+        if c3.button("✕", key=f"sdel_{i}", help="Remove"):
             to_delete = i
 
     if to_delete is not None:
         st.session_state["spend_rows"].pop(to_delete)
         st.rerun()
 
-    if st.button("＋ Add category", key="sadd"):
-        st.session_state["spend_rows"].append({"cat": SPEND_CATEGORIES[0], "amt": 1000})
-        st.rerun()
+    # Total spend summary
+    total = sum(int(r["amt"]) for r in rows if r["amt"] > 0)
+    col_add, col_total = st.columns([3, 2])
+    with col_add:
+        if st.button("＋ Add category", key="sadd"):
+            st.session_state["spend_rows"].append({"cat": SPEND_CATEGORIES[0], "amt": 1000})
+            st.rerun()
+    col_total.markdown(f"""
+<div style="text-align:right;padding-top:6px">
+  <span style="color:#64748b;font-size:0.8rem">Monthly total </span>
+  <span style="color:{T['primary_light']};font-weight:700;font-size:1rem">₹{total:,}</span>
+  <span style="color:#64748b;font-size:0.8rem"> · ₹{total*12:,}/yr</span>
+</div>
+""", unsafe_allow_html=True)
 
-    st.divider()
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
     if st.button("Find best card(s) for me →", type="primary", use_container_width=True):
         spend = {r["cat"]: int(r["amt"]) for r in rows if r["amt"] > 0}
