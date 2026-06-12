@@ -951,6 +951,7 @@ SPEND_CATEGORIES = [
     "Flipkart",
     "Groceries",
     "Fuel",
+    "Travel (flights/hotels)",
     "Travel & Flights",
     "Movies & Entertainment",
     "Dining out",
@@ -960,18 +961,36 @@ SPEND_CATEGORIES = [
     "Other online shopping",
 ]
 
+_PROFILE_TRAVEL = [
+    {"cat": "Food delivery (Swiggy/Zomato)", "amt": 4000},
+    {"cat": "Amazon", "amt": 6000},
+    {"cat": "Fuel", "amt": 3000},
+    {"cat": "Travel (flights/hotels)", "amt": 10000},
+]
+_PROFILE_DINING = [
+    {"cat": "Food delivery (Swiggy/Zomato)", "amt": 4000},
+    {"cat": "Amazon", "amt": 6000},
+    {"cat": "Fuel", "amt": 3000},
+    {"cat": "Travel (flights/hotels)", "amt": 2000},
+    {"cat": "Dining out", "amt": 8000},
+]
+
 with tab_get_card:
     st.markdown("#### Tell us how you spend monthly")
-    st.caption("We'll recommend the best card(s) to get for maximum savings.")
 
-    # Dynamic spend rows
-    if "spend_rows" not in st.session_state:
-        st.session_state["spend_rows"] = [
-            {"cat": "Food delivery (Swiggy/Zomato)", "amt": 4000},
-            {"cat": "Amazon", "amt": 6000},
-            {"cat": "Fuel", "amt": 3000},
-            {"cat": "Travel (flights/hotels)", "amt": 10000},
-        ]
+    profile = st.radio(
+        "Spend profile",
+        ["✈️ Travel Spender", "🍽️ Dining Spender", "✏️ Custom"],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+
+    if profile == "✈️ Travel Spender":
+        st.session_state["spend_rows"] = [r.copy() for r in _PROFILE_TRAVEL]
+    elif profile == "🍽️ Dining Spender":
+        st.session_state["spend_rows"] = [r.copy() for r in _PROFILE_DINING]
+    elif "spend_rows" not in st.session_state:
+        st.session_state["spend_rows"] = [r.copy() for r in _PROFILE_TRAVEL]
 
     rows = st.session_state["spend_rows"]
     to_delete = None

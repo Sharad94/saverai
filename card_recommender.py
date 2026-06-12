@@ -98,9 +98,88 @@ Rules:
 - key_tnc: max 2 items, most important caps/restrictions only"""
 
 
+DEMO_SPEND_2 = {
+    "Food delivery (Swiggy/Zomato)": 4000,
+    "Amazon": 6000,
+    "Fuel": 3000,
+    "Travel (flights/hotels)": 2000,
+    "Dining out": 8000,
+}
+
+DEMO_RESULT_2 = {
+    "top_cards": [
+        {
+            "bank": "American Express",
+            "card": "Membership Rewards Credit Card",
+            "network": "Amex",
+            "annual_fee": 1500,
+            "fee_waiver": "Spend ₹1.5L/year to waive",
+            "already_owned": False,
+            "estimated_monthly_savings": 580,
+            "estimated_annual_savings": 6960,
+            "net_annual_benefit": 5460,
+            "category_benefits": [
+                {"category": "Dining out", "benefit": "5x Membership Rewards on weekends + select restaurants", "monthly_saving": 400},
+                {"category": "Amazon", "benefit": "5x on Amazon & BigBasket on select days", "monthly_saving": 180},
+            ],
+            "key_tnc": ["5x capped at 2,500 bonus MR points/month", "MR points expire if card is closed"],
+            "why": "Best dining card in India — 5x weekend multiplier on restaurants turns ₹8k dining into real rewards",
+        },
+        {
+            "bank": "SBI Card",
+            "card": "Cashback Credit Card",
+            "network": "Visa",
+            "annual_fee": 999,
+            "fee_waiver": "Spend ₹2L/year to waive",
+            "already_owned": False,
+            "estimated_monthly_savings": 500,
+            "estimated_annual_savings": 6000,
+            "net_annual_benefit": 5001,
+            "category_benefits": [
+                {"category": "Amazon", "benefit": "5% cashback on all online transactions", "monthly_saving": 300},
+                {"category": "Dining out", "benefit": "5% cashback on online food orders & dining apps", "monthly_saving": 200},
+            ],
+            "key_tnc": ["5% capped at ₹5,000 cashback/month", "Cashback credited as statement credit next cycle"],
+            "why": "Flat 5% on all online spends with no merchant restriction — covers Amazon and online dining seamlessly",
+        },
+        {
+            "bank": "BPCL SBI",
+            "card": "Octane Credit Card",
+            "network": "Visa",
+            "annual_fee": 1499,
+            "fee_waiver": "Spend ₹2L/year to waive",
+            "already_owned": False,
+            "estimated_monthly_savings": 520,
+            "estimated_annual_savings": 6240,
+            "net_annual_benefit": 4741,
+            "category_benefits": [
+                {"category": "Fuel", "benefit": "7.25% value back on BPCL (6.25% rewards + 1% surcharge waiver)", "monthly_saving": 217},
+                {"category": "Amazon", "benefit": "5x rewards on grocery & dining", "monthly_saving": 303},
+            ],
+            "key_tnc": ["Fuel rewards capped at 6,250 points/month", "Redemption only against BPCL fuel or statement credit"],
+            "why": "Fills the fuel gap — no other card in your wallet gives meaningful rewards on petrol",
+        },
+    ],
+    "best_combo": {
+        "cards": ["Amex Membership Rewards", "SBI Cashback"],
+        "combined_monthly_savings": 1080,
+        "combined_annual_savings": 12960,
+        "combined_annual_fees": 2499,
+        "net_annual_benefit": 10461,
+        "split": [
+            {"card": "Amex Membership Rewards", "use_for": ["Dining out"], "monthly_saving": 580},
+            {"card": "SBI Cashback", "use_for": ["Amazon", "Food delivery (Swiggy/Zomato)"], "monthly_saving": 500},
+        ],
+        "why": "Amex maximises dining rewards; SBI Cashback covers all online spends at flat 5% — together they eliminate your two biggest spend gaps",
+    },
+}
+
+
 def recommend_cards(spend: dict, owned_cards: list[dict]) -> dict:
     if spend == DEMO_SPEND:
         return DEMO_RESULT
+    if spend == DEMO_SPEND_2:
+        return DEMO_RESULT_2
 
     spend_profile = "\n".join(
         f"- {cat}: ₹{amt:,.0f}/month" for cat, amt in spend.items() if amt > 0
