@@ -598,6 +598,19 @@ tab_smart, tab_add_voucher, tab_vouchers, tab_add_card, tab_cards, tab_get_card 
 ])
 
 
+def _section_header(icon: str, title: str, subtitle: str = "") -> None:
+    sub = f'<div style="color:#64748b;font-size:0.78rem;margin-top:2px">{subtitle}</div>' if subtitle else ""
+    st.markdown(f"""
+<div style="display:flex;align-items:center;gap:10px;margin:18px 0 10px">
+  <div style="background:{T['accent_bg']};border-radius:8px;padding:6px 10px;
+       font-size:1.1rem;line-height:1">{icon}</div>
+  <div>
+    <div style="font-size:1rem;font-weight:700;color:#f0f0f0">{title}</div>
+    {sub}
+  </div>
+</div>""", unsafe_allow_html=True)
+
+
 # ── SMART ADVISOR ─────────────────────────────────────────────────────────────
 
 def _render_grabon_html(grabon_codes: list[dict]) -> None:
@@ -697,11 +710,21 @@ def _render_advisor_vouchers(vouchers: list[dict]) -> None:
 
 
 with tab_smart:
-    st.markdown("#### What are you buying?")
+    st.markdown(f"""
+<div style="background:linear-gradient(135deg,{T['card']} 0%,{T['card2']} 100%);
+     border:1px solid #ffffff10;border-radius:16px;padding:22px 24px 18px;margin-bottom:16px">
+  <div style="font-size:1.3rem;font-weight:700;color:#f0f0f0;margin-bottom:4px">
+    🎯 Smart Advisor
+  </div>
+  <div style="color:#64748b;font-size:0.88rem">
+    Tell us what you're buying — we'll find the best card and vouchers instantly.
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
     with st.form("advisor_form"):
-        item = st.text_input("Item", placeholder="e.g. Sony headphones, Swiggy dinner", label_visibility="collapsed")
-        platform = st.text_input("Platform", placeholder="Platform / merchant (optional)", label_visibility="collapsed")
+        item = st.text_input("Item", placeholder="🛒  What are you buying? e.g. Sony headphones, Swiggy dinner", label_visibility="collapsed")
+        platform = st.text_input("Platform", placeholder="🏪  Platform or merchant (optional)", label_visibility="collapsed")
         submitted = st.form_submit_button("Find best card & vouchers →", type="primary", use_container_width=True)
 
     if submitted and item:
@@ -715,22 +738,18 @@ with tab_smart:
         f_grabon   = ex.submit(fetch_live_codes, platform or item)
         f_advice   = ex.submit(advise_best_card, item, 0, platform, cards)
 
-        st.divider()
-        st.markdown("#### 🎟️ Your Saved Vouchers")
+        _section_header("🎟️", "Your Saved Vouchers", "Matching vouchers from your vault")
         ph_vouchers = st.empty()
         ph_vouchers.info("🔍 Searching your vault…")
 
-        st.divider()
-        st.markdown("#### 🌐 Live Online Codes")
+        _section_header("⚡", "Live Online Codes", "Real-time codes from GrabOn")
         ph_grabon = st.empty()
         ph_grabon.info("⚡ Fetching live codes from GrabOn…")
 
-        st.divider()
-        st.markdown("#### 🔍 Search More Online")
+        _section_header("🔍", "Search More Online")
         _render_online_links()
 
-        st.divider()
-        st.markdown("#### 💳 Best Card to Use")
+        _section_header("💳", "Best Card to Use", "Ranked by savings for this purchase")
         ph_cards = st.empty()
         ph_cards.info("🤖 Analysing your cards…")
 
@@ -769,24 +788,20 @@ with tab_smart:
         if st.session_state.pop("advisor_used_rain", False):
             _money_rain()
 
-        st.divider()
-        st.markdown("#### 🎟️ Your Saved Vouchers")
+        _section_header("🎟️", "Your Saved Vouchers", "Matching vouchers from your vault")
         _render_advisor_vouchers(cached["vouchers"])
 
-        st.divider()
-        st.markdown("#### 🌐 Live Online Codes")
+        _section_header("⚡", "Live Online Codes", "Real-time codes from GrabOn")
         if not cached["grabon"]:
             st.caption("No promo codes found on GrabOn for this search.")
         else:
             st.caption("⚡ Fetched live from GrabOn · Codes may not always work — verify before checkout.")
             _render_grabon_html(cached["grabon"])
 
-        st.divider()
-        st.markdown("#### 🔍 Search More Online")
+        _section_header("🔍", "Search More Online")
         _render_online_links()
 
-        st.divider()
-        st.markdown("#### 💳 Best Card to Use")
+        _section_header("💳", "Best Card to Use", "Ranked by savings for this purchase")
         _render_card_advice(cached["advice"])
 
 
@@ -880,7 +895,7 @@ with tab_add_card:
         _render_card(_saved_card, key_prefix="saved_c")
         st.divider()
 
-    st.markdown("#### Add a credit card")
+    _section_header("💳", "Add a Credit Card", "We'll look up benefits automatically")
 
     col_bank, col_card = st.columns(2)
     bank_name = col_bank.text_input("Bank name", placeholder="e.g. HDFC, Axis, ICICI, SBI")
@@ -926,9 +941,14 @@ with tab_vouchers:
     vouchers = get_all_vouchers(view=view.lower(), sort=sort_key)
 
     if not vouchers:
-        st.info("No vouchers yet — add one from ➕ Add Voucher.")
+        st.markdown(f"""
+<div style="background:{T['card']};border:1px solid #ffffff10;border-radius:14px;
+     padding:32px;text-align:center;margin-top:12px">
+  <div style="font-size:2rem;margin-bottom:8px">🎟️</div>
+  <div style="color:#94a3b8;font-size:0.95rem">No vouchers yet — add one from ➕ Add Voucher.</div>
+</div>""", unsafe_allow_html=True)
     else:
-        st.caption(f"{len(vouchers)} voucher(s)")
+        _section_header("🎟️", f"My Vouchers", f"{len(vouchers)} voucher{'s' if len(vouchers) != 1 else ''}")
         for v in vouchers:
             _render_voucher_card(v)
 
@@ -937,9 +957,14 @@ with tab_vouchers:
 with tab_cards:
     cards = get_all_cards()
     if not cards:
-        st.info("No cards yet — add one from 💳 Add Card.")
+        st.markdown(f"""
+<div style="background:{T['card']};border:1px solid #ffffff10;border-radius:14px;
+     padding:32px;text-align:center;margin-top:12px">
+  <div style="font-size:2rem;margin-bottom:8px">💳</div>
+  <div style="color:#94a3b8;font-size:0.95rem">No cards yet — add one from 💳 Add Card.</div>
+</div>""", unsafe_allow_html=True)
     else:
-        st.caption(f"{len(cards)} card(s)")
+        _section_header("💳", "My Cards", f"{len(cards)} card{'s' if len(cards) != 1 else ''} in your wallet")
         for c in cards:
             _render_card(c)
 
@@ -1075,7 +1100,7 @@ with tab_get_card:
             err = result.get("_error", "")
             st.error(f"Could not generate recommendations — please try again. {('(' + err + ')') if err else ''}")
         else:
-            st.markdown("#### 🏆 Best Individual Cards")
+            _section_header("🏆", "Best Individual Cards", "Ranked by net annual benefit for your spend")
 
             def _rec_card_html(card, i, owned_labels):
                 label = f"{card.get('bank','')} {card.get('card','')}".strip()
@@ -1127,7 +1152,7 @@ with tab_get_card:
                             height=len(top_cards) * 200 + 20, scrolling=False)
 
             if combo:
-                st.markdown("#### 🃏 Best 2-Card Combo")
+                _section_header("🃏", "Best 2-Card Combo", "Maximum coverage across all your categories")
                 combo_cards_label = " + ".join(combo.get("cards") or [])
                 combined_savings = combo.get("combined_annual_savings") or 0
                 combined_fees = combo.get("combined_annual_fees") or 0
