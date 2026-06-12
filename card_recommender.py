@@ -176,9 +176,10 @@ DEMO_RESULT_2 = {
 
 
 def recommend_cards(spend: dict, owned_cards: list[dict]) -> dict:
-    if spend == DEMO_SPEND:
+    spend_int = {k: int(v) for k, v in spend.items()}
+    if spend_int == DEMO_SPEND:
         return DEMO_RESULT
-    if spend == DEMO_SPEND_2:
+    if spend_int == DEMO_SPEND_2:
         return DEMO_RESULT_2
 
     spend_profile = "\n".join(

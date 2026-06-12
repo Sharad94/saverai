@@ -1005,15 +1005,16 @@ with tab_get_card:
     st.divider()
 
     if st.button("Find best card(s) for me →", type="primary", use_container_width=True):
-        spend = {r["cat"]: r["amt"] for r in rows if r["amt"] > 0}
-        owned = get_all_cards()
+        spend = {r["cat"]: int(r["amt"]) for r in rows if r["amt"] > 0}
 
         with st.spinner("🧠 Analysing your spend profile..."):
             try:
+                owned = get_all_cards()
                 result = recommend_cards(spend, owned)
             except Exception as e:
                 st.error(f"Gemini error — please try again in a few seconds. ({type(e).__name__})")
                 result = {}
+                owned = []
 
         owned_labels = {f"{c['bank_name']} {c['card_name']}".lower() for c in owned}
 
