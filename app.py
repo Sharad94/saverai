@@ -967,9 +967,10 @@ with tab_get_card:
     # Dynamic spend rows
     if "spend_rows" not in st.session_state:
         st.session_state["spend_rows"] = [
-            {"cat": "Food delivery (Swiggy/Zomato)", "amt": 3000},
-            {"cat": "Amazon", "amt": 5000},
-            {"cat": "Fuel", "amt": 2000},
+            {"cat": "Food delivery (Swiggy/Zomato)", "amt": 4000},
+            {"cat": "Amazon", "amt": 6000},
+            {"cat": "Fuel", "amt": 3000},
+            {"cat": "Travel (flights/hotels)", "amt": 10000},
         ]
 
     rows = st.session_state["spend_rows"]

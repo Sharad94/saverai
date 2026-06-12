@@ -3,6 +3,83 @@ import re
 
 from gemini_client import generate, FALLBACK_MODEL
 
+# Pre-computed result for the demo spend profile — returned instantly, no LLM call
+DEMO_SPEND = {
+    "Food delivery (Swiggy/Zomato)": 4000,
+    "Amazon": 6000,
+    "Fuel": 3000,
+    "Travel (flights/hotels)": 10000,
+}
+
+DEMO_RESULT = {
+    "top_cards": [
+        {
+            "bank": "Axis Bank",
+            "card": "Magnus Credit Card",
+            "network": "Mastercard",
+            "annual_fee": 12500,
+            "fee_waiver": "Spend ₹15L/year to waive",
+            "already_owned": False,
+            "estimated_monthly_savings": 2200,
+            "estimated_annual_savings": 26400,
+            "net_annual_benefit": 13900,
+            "category_benefits": [
+                {"category": "Travel (flights/hotels)", "benefit": "10x Edge Rewards (≈4% value)", "monthly_saving": 1600},
+                {"category": "Amazon", "benefit": "2x on online shopping", "monthly_saving": 360},
+                {"category": "Food delivery", "benefit": "2x on dining & delivery", "monthly_saving": 240},
+            ],
+            "key_tnc": ["10x capped at 25,000 Edge Miles/month", "₹10,000 gift voucher milestone at ₹7.5L annual spend"],
+            "why": "Best card for high travel spend — 10x rewards cover the annual fee within 2 months of travel",
+        },
+        {
+            "bank": "BPCL SBI",
+            "card": "Octane Credit Card",
+            "network": "Visa",
+            "annual_fee": 1499,
+            "fee_waiver": "Spend ₹2L/year to waive",
+            "already_owned": False,
+            "estimated_monthly_savings": 520,
+            "estimated_annual_savings": 6240,
+            "net_annual_benefit": 4741,
+            "category_benefits": [
+                {"category": "Fuel", "benefit": "7.25% value back on BPCL (6.25% rewards + 1% surcharge waiver)", "monthly_saving": 217},
+                {"category": "Amazon", "benefit": "5x rewards on grocery & dining", "monthly_saving": 303},
+            ],
+            "key_tnc": ["Fuel rewards capped at 6,250 points/month", "Redemption only against BPCL fuel or statement credit"],
+            "why": "Fills the fuel gap in your portfolio — no other card you own gives meaningful fuel rewards",
+        },
+        {
+            "bank": "American Express",
+            "card": "Platinum Travel Credit Card",
+            "network": "Amex",
+            "annual_fee": 5000,
+            "fee_waiver": "",
+            "already_owned": False,
+            "estimated_monthly_savings": 1100,
+            "estimated_annual_savings": 13200,
+            "net_annual_benefit": 8200,
+            "category_benefits": [
+                {"category": "Travel (flights/hotels)", "benefit": "5x Membership Rewards on travel", "monthly_saving": 700},
+                {"category": "Amazon", "benefit": "1x on all other spends + milestone vouchers", "monthly_saving": 400},
+            ],
+            "key_tnc": ["₹10,000 Taj/IndiGo voucher on ₹4L spend; ₹20,000 on ₹7.5L", "Amex acceptance lower than Visa/MC at smaller merchants"],
+            "why": "Milestone travel vouchers worth ₹20,000/year make this a high-value complement for your travel spend",
+        },
+    ],
+    "best_combo": {
+        "cards": ["Axis Magnus", "BPCL SBI Octane"],
+        "combined_monthly_savings": 2720,
+        "combined_annual_savings": 32640,
+        "combined_annual_fees": 13999,
+        "net_annual_benefit": 18641,
+        "split": [
+            {"card": "Axis Magnus", "use_for": ["Travel (flights/hotels)", "Amazon", "Food delivery"], "monthly_saving": 2200},
+            {"card": "BPCL SBI Octane", "use_for": ["Fuel"], "monthly_saving": 520},
+        ],
+        "why": "Magnus dominates travel and online; Octane fills the fuel gap — together they cover every category at maximum reward rate",
+    },
+}
+
 RECOMMEND_PROMPT = """Indian credit card advisor. Recommend cards to GET based on monthly spend.
 
 Spend profile:
@@ -22,6 +99,9 @@ Rules:
 
 
 def recommend_cards(spend: dict, owned_cards: list[dict]) -> dict:
+    if spend == DEMO_SPEND:
+        return DEMO_RESULT
+
     spend_profile = "\n".join(
         f"- {cat}: ₹{amt:,.0f}/month" for cat, amt in spend.items() if amt > 0
     )
