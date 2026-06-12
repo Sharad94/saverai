@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 from parser import parse_voucher_screenshot, parse_voucher_text
 from card_parser import parse_card_benefits, parse_card_from_name
-from card_recommender import recommend_cards
+from card_recommender import recommend_cards, DEMO_SPEND, DEMO_SPEND_2
 from card_advisor import advise_best_card
 from database import (
     save_voucher, get_all_vouchers, mark_used, delete_voucher,
@@ -1007,7 +1007,6 @@ with tab_get_card:
     if st.button("Find best card(s) for me →", type="primary", use_container_width=True):
         spend = {r["cat"]: int(r["amt"]) for r in rows if r["amt"] > 0}
 
-        from card_recommender import DEMO_SPEND, DEMO_SPEND_2
         spend_int = {k: int(v) for k, v in spend.items()}
         is_demo = spend_int in (DEMO_SPEND, DEMO_SPEND_2)
 
