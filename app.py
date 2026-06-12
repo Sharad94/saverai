@@ -1007,9 +1007,13 @@ with tab_get_card:
     if st.button("Find best card(s) for me →", type="primary", use_container_width=True):
         spend = {r["cat"]: int(r["amt"]) for r in rows if r["amt"] > 0}
 
+        from card_recommender import DEMO_SPEND, DEMO_SPEND_2
+        spend_int = {k: int(v) for k, v in spend.items()}
+        is_demo = spend_int in (DEMO_SPEND, DEMO_SPEND_2)
+
         with st.spinner("🧠 Analysing your spend profile..."):
             try:
-                owned = get_all_cards()
+                owned = [] if is_demo else get_all_cards()
                 result = recommend_cards(spend, owned)
             except Exception as e:
                 st.error(f"Gemini error — please try again in a few seconds. ({type(e).__name__})")
