@@ -977,19 +977,9 @@ _PROFILE_DINING = [
 
 with tab_get_card:
     st.markdown("#### Tell us how you spend monthly")
+    st.caption("We'll recommend the best card(s) to get for maximum savings.")
 
-    profile = st.radio(
-        "Spend profile",
-        ["✈️ Travel Spender", "🍽️ Dining Spender", "✏️ Custom"],
-        horizontal=True,
-        label_visibility="collapsed",
-    )
-
-    if profile == "✈️ Travel Spender":
-        st.session_state["spend_rows"] = [r.copy() for r in _PROFILE_TRAVEL]
-    elif profile == "🍽️ Dining Spender":
-        st.session_state["spend_rows"] = [r.copy() for r in _PROFILE_DINING]
-    elif "spend_rows" not in st.session_state:
+    if "spend_rows" not in st.session_state:
         st.session_state["spend_rows"] = [r.copy() for r in _PROFILE_TRAVEL]
 
     rows = st.session_state["spend_rows"]
