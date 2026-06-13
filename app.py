@@ -582,7 +582,7 @@ st.markdown(f"""
     </svg>
     <div>
       <h1>SaverAI</h1>
-      <p>Best card + best voucher — before every purchase.</p>
+      <p>Save before you swipe.</p>
     </div>
   </div>
 </div>
