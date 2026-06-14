@@ -95,6 +95,14 @@ div[data-testid="stRadio"] label {{ padding: 2px 8px !important; font-size: 0.72
     background: #ffffff0d; border: 1px solid #ffffff12; border-radius: 20px;
     padding: 3px 12px; font-size: 0.78rem; color: #94a3b8; white-space: nowrap;
 }}
+.hero-title {{
+    font-size: 1.9rem; font-weight: 800; letter-spacing: -0.5px;
+    background: {T['title_grad']}; -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; background-clip: text;
+}}
+.hero-sub {{
+    color: #64748b; font-size: 0.78rem; margin-top: 2px; letter-spacing: 0.5px;
+}}
 
 .stTabs [data-baseweb="tab-list"] {{
     background: {T['card']}; border-radius: 12px; padding: 4px; gap: 2px;
@@ -605,13 +613,8 @@ st.markdown(f"""
         <path d="M26 7 L43 14 L43 22 C38 18 32 12 26 7 Z" fill="white" opacity="0.1"/>
       </svg>
       <div>
-        <div style="font-size:1.9rem;font-weight:800;letter-spacing:-0.5px;
-             background:{T['title_grad']};-webkit-background-clip:text;-webkit-text-fill-color:transparent">
-          SaverAI
-        </div>
-        <div style="color:#64748b;font-size:0.82rem;margin-top:1px;letter-spacing:0.3px">
-          SAVE BEFORE YOU SWIPE
-        </div>
+        <div class="hero-title">SaverAI</div>
+        <div class="hero-sub">SAVE BEFORE YOU SWIPE</div>
       </div>
     </div>
     <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
