@@ -61,8 +61,9 @@ THEMES = {
     },
 }
 
-theme_name = st.radio("🎨 Theme", list(THEMES.keys()), horizontal=True,
-                      label_visibility="collapsed", index=0)
+with st.sidebar:
+    st.markdown("### 🎨 Theme")
+    theme_name = st.radio("Theme", list(THEMES.keys()), label_visibility="collapsed", index=0)
 T = THEMES[theme_name]
 
 st.markdown(f"""
@@ -76,13 +77,13 @@ html, body, [class*="css"] {{ font-family: 'Inter', sans-serif; }}
 
 .hero {{
     background: {T['hero_grad']};
-    border-radius: 16px; padding: 24px 32px; margin-bottom: 24px;
+    border-radius: 14px; padding: 14px 24px; margin-bottom: 16px;
     border: 1px solid #ffffff10;
 }}
-.hero-inner {{ display: flex; align-items: center; gap: 18px; }}
-.hero h1 {{ font-size: 2rem; font-weight: 700; margin: 0 0 4px 0;
+.hero-inner {{ display: flex; align-items: center; gap: 14px; }}
+.hero h1 {{ font-size: 1.5rem; font-weight: 700; margin: 0 0 2px 0;
     background: {T['title_grad']}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }}
-.hero p {{ color: #94a3b8; margin: 0; font-size: 0.95rem; }}
+.hero p {{ color: #94a3b8; margin: 0; font-size: 0.85rem; }}
 
 .stTabs [data-baseweb="tab-list"] {{
     background: {T['card']}; border-radius: 12px; padding: 4px; gap: 2px;
@@ -539,8 +540,8 @@ window.addEventListener('load', resize);
 </div>
 </body></html>""", height=height, scrolling=True)
 
-    st.markdown('<div style="margin-top:-12px"></div>', unsafe_allow_html=True)
-    if st.button("🗑 Delete", key=f"{key_prefix}del_{c['id']}", use_container_width=True):
+    col_del, _ = st.columns([1, 5])
+    if col_del.button("🗑 Delete", key=f"{key_prefix}del_{c['id']}"):
         delete_card(c["id"])
         st.rerun()
 
@@ -550,7 +551,7 @@ window.addEventListener('load', resize);
 st.markdown(f"""
 <div class="hero">
   <div class="hero-inner">
-    <svg width="52" height="58" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="38" height="42" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="shieldGrad" x1="0" y1="0" x2="52" y2="58" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="{T['primary_light']}"/>
@@ -813,6 +814,14 @@ with tab_add_voucher:
         _money_rain()
         _render_voucher_card(_saved, key_prefix="saved")
         st.divider()
+
+    st.markdown(f"""
+<div style="background:linear-gradient(135deg,{T['card']} 0%,{T['card2']} 100%);
+     border:1px solid #ffffff10;border-radius:16px;padding:22px 24px 18px;margin-bottom:16px">
+  <div style="font-size:1.3rem;font-weight:700;color:#f0f0f0;margin-bottom:4px">➕ Add a Voucher</div>
+  <div style="color:#64748b;font-size:0.88rem">Upload a screenshot or paste text — AI extracts all the details automatically.</div>
+</div>
+""", unsafe_allow_html=True)
 
     _upload_nonce = st.session_state.setdefault("_upload_nonce", 0)
 
