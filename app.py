@@ -614,7 +614,7 @@ st.markdown(f"""
       </svg>
       <div>
         <div class="hero-title">SaverAI</div>
-        <div class="hero-sub">SAVE BEFORE YOU SWIPE</div>
+        <div class="hero-sub">TURN EVERY PAYMENT INTO SAVINGS</div>
       </div>
     </div>
     <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
