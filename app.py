@@ -624,8 +624,18 @@ st.markdown(f"""
         <div style="color:#34d39988;font-size:0.7rem;margin-top:2px;letter-spacing:0.3px;font-style:italic;font-weight:700">Not all heroes wear capes.</div>
       </div>
     </div>
-    <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-      <div style="display:flex;gap:10px">
+    <div style="text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="text-align:right">
+          <div style="font-size:0.82rem;font-weight:600;color:#f0f0f0">Sharad Maheshwari</div>
+          <div style="font-size:0.68rem;color:#64748b">Personal Vault</div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,{T['primary']},{T['primary_dark']});
+             display:flex;align-items:center;justify-content:center;
+             font-size:0.85rem;font-weight:800;color:white;flex-shrink:0;
+             border:2px solid {T['primary_light']}44">SM</div>
+      </div>
+      <div style="display:flex;gap:8px">
         <div class="hero-stat">🎟️ {_v_count} vouchers</div>
         <div class="hero-stat">💳 {_c_count} cards</div>
       </div>
