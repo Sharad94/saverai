@@ -93,15 +93,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
 
 .s1-shield{
-  position:absolute;right:60px;bottom:30px;
+  position:absolute;right:60px;bottom:140px;
 }
 .s1-shield svg{width:420px;height:476px}
 
 .s1-stat-row{
-  position:absolute;bottom:64px;left:88px;
+  position:absolute;bottom:44px;right:88px;
   display:flex;gap:40px;
 }
-.s1-stat{text-align:left}
+.s1-stat{text-align:right}
 .s1-stat-num{font-size:2rem;font-weight:800;color:var(--green-l)}
 .s1-stat-label{font-size:.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
 
@@ -276,7 +276,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 <canvas id="bg-canvas"></canvas>
 
 <!-- ── PERSISTENT SHIELD TOP-RIGHT ── -->
-<div style="position:fixed;top:24px;right:36px;z-index:100;display:flex;align-items:center;gap:10px">
+<div id="persistent-shield" style="position:fixed;top:24px;right:36px;z-index:100;display:flex;align-items:center;gap:10px;opacity:0;transition:opacity 0.4s ease;pointer-events:none">
   <div style="text-align:right">
     <div style="font-size:1.4rem;font-weight:800;letter-spacing:-0.3px;
          background:linear-gradient(90deg,#f0f0f0,#34d399);
@@ -318,7 +318,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   <div class="orb" style="width:200px;height:200px;background:radial-gradient(circle,#34d39908,transparent 70%);bottom:60px;right:400px;animation-duration:9s;animation-delay:-4s"></div>
 
   <!-- Shield ghost glow -->
-  <div class="fly from-right d5" style="position:absolute;right:60px;bottom:30px;width:420px;height:476px;pointer-events:none">
+  <div class="fly from-right d5" style="position:absolute;right:60px;bottom:140px;width:420px;height:476px;pointer-events:none">
     <div style="position:absolute;inset:-50px;background:radial-gradient(circle,#05966960 0%,transparent 65%);border-radius:50%;animation:shieldpulse 4s ease-in-out infinite"></div>
   </div>
 
@@ -665,6 +665,8 @@ slides.forEach((_, i) => {
   nav.appendChild(d);
 });
 
+const persistentShield = document.getElementById('persistent-shield');
+
 function goTo(n) {
   n = Math.max(0, Math.min(n, slides.length-1));
   slides[current].classList.remove('active');
@@ -673,7 +675,8 @@ function goTo(n) {
   slides[current].classList.add('active');
   nav.children[current].classList.add('active');
   slideNum.textContent = `${current+1} / ${slides.length}`;
-  // trigger counters
+  persistentShield.style.opacity = current === 0 ? '0' : '1';
+  persistentShield.style.pointerEvents = current === 0 ? 'none' : 'all';
   animateCounters(slides[current]);
 }
 goTo(0);
