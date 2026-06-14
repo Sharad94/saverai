@@ -266,11 +266,47 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   0%,100%{border-color:var(--border)}
   50%{border-color:var(--green)55}
 }
+@keyframes shieldpulse{
+  0%,100%{opacity:.7;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.08)}
+}
 </style>
 </head>
 <body>
 
 <canvas id="bg-canvas"></canvas>
+
+<!-- ── PERSISTENT SHIELD TOP-RIGHT ── -->
+<div style="position:fixed;top:24px;right:36px;z-index:100;display:flex;align-items:center;gap:10px">
+  <div style="text-align:right">
+    <div style="font-size:1rem;font-weight:800;letter-spacing:-0.3px;
+         background:linear-gradient(90deg,#f0f0f0,#34d399);
+         -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">SaverAI</div>
+    <div style="font-size:.55rem;color:#34d39966;font-weight:700;letter-spacing:1.5px;font-style:italic">Not all heroes wear capes.</div>
+  </div>
+  <div style="position:relative;flex-shrink:0">
+    <div style="position:absolute;inset:-12px;background:radial-gradient(circle,#05966945 0%,transparent 70%);border-radius:50%;pointer-events:none;animation:shieldpulse 3s ease-in-out infinite"></div>
+    <svg width="48" height="54" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="psg" x1="0" y1="0" x2="52" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#34d399"/>
+          <stop offset="100%" stop-color="#047857"/>
+        </linearGradient>
+        <filter id="pglow">
+          <feGaussianBlur stdDeviation="1.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z" fill="url(#psg)" opacity="0.15"/>
+      <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z" stroke="#34d399" stroke-width="1.5" fill="none"/>
+      <path d="M26 7 L43 14 L43 28 C43 39 33 48 26 51 C19 48 9 39 9 28 L9 14 Z" fill="url(#psg)" opacity="0.9"/>
+      <path d="M31 11 L18 31 L25 31 L20 47 L36 24 L28 24 Z" fill="white" opacity="0.8"/>
+      <path d="M26 7 L43 14 L43 22 C38 18 32 12 26 7 Z" fill="white" opacity="0.1"/>
+      <text x="26" y="36" text-anchor="middle" font-family="Inter,sans-serif"
+            font-size="22" font-weight="900" fill="#052e16" opacity="1" filter="url(#pglow)">S</text>
+    </svg>
+  </div>
+</div>
 
 <div class="deck">
 
