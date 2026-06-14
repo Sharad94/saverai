@@ -491,15 +491,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 <!-- ════════════════ SLIDE 4: FEATURES ════════════════ -->
 <div class="slide s4">
   <div class="eyebrow fly from-left d1">Core Features</div>
-  <div style="font-size:2.8rem;font-weight:900;letter-spacing:-1px;margin-bottom:6px" class="fly from-bottom d2">
+  <div style="font-size:2.8rem;font-weight:900;letter-spacing:-1px;margin-bottom:6px" class="fly from-top d2">
     Three pillars of <span class="glow-text">smarter spending</span>
   </div>
-  <div style="font-size:.88rem;color:var(--muted);margin-bottom:4px" class="fly from-bottom d3">
+  <div style="font-size:.88rem;color:var(--muted);margin-bottom:4px" class="fly from-top d3">
     Built for India. Works before every purchase.
   </div>
 
   <div class="feat-grid">
-    <div class="feat-card fly from-bottom d4">
+    <div class="feat-card fly from-bottom d5">
       <div class="feat-num">01</div>
       <div class="feat-icon">🎟️</div>
       <div class="feat-title">Voucher Vault</div>
@@ -509,7 +509,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
       </div>
     </div>
 
-    <div class="feat-card fly from-bottom d5" style="border-color:var(--green)33">
+    <div class="feat-card fly from-bottom d6" style="border-color:var(--green)33">
       <div class="feat-num">02</div>
       <div class="feat-icon">🎯</div>
       <div class="feat-title">Smart Advisor</div>
@@ -519,7 +519,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
       </div>
     </div>
 
-    <div class="feat-card fly from-bottom d6">
+    <div class="feat-card fly from-bottom d7">
       <div class="feat-num">03</div>
       <div class="feat-icon">💡</div>
       <div class="feat-title">Card Recommender</div>
@@ -592,11 +592,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   <div class="demo-title fly from-bottom d2"><span class="glow-text">See it<br>in action</span></div>
   <div class="demo-sub fly from-bottom d3">Watch how SaverAI finds the right card and the best voucher — before every purchase, in real time.</div>
 
-  <div class="demo-chips fly from-bottom d4">
-    <div class="demo-chip">🎟️ Voucher Vault</div>
-    <div class="demo-chip">🎯 Smart Advisor</div>
-    <div class="demo-chip">💡 Card Recommender</div>
-  </div>
 </div>
 
 </div><!-- /deck -->
@@ -743,7 +738,7 @@ function animateCounters(slide) {
     const prefix = el.dataset.prefix || '';
     const suffix = el.dataset.suffix || '';
     let start = 0;
-    const dur = 1200;
+    const dur = 2800;
     const step = timestamp => {
       if(!start) start = timestamp;
       const progress = Math.min((timestamp - start) / dur, 1);
