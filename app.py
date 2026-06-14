@@ -587,34 +587,37 @@ st.markdown(f"""
 <div class="hero">
   <div class="hero-inner" style="justify-content:space-between">
     <div style="display:flex;align-items:center;gap:16px">
-      <svg width="44" height="50" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="shieldGrad" x1="0" y1="0" x2="52" y2="58" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="{T['primary_light']}"/>
-            <stop offset="100%" stop-color="{T['primary_dark']}"/>
-          </linearGradient>
-          <linearGradient id="boltGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#ffffff"/>
-            <stop offset="100%" stop-color="{T['accent']}"/>
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z"
-              fill="url(#shieldGrad)" opacity="0.15"/>
-        <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z"
-              stroke="{T['primary']}" stroke-width="1.5" fill="none"/>
-        <path d="M26 7 L43 14 L43 28 C43 39 33 48 26 51 C19 48 9 39 9 28 L9 14 Z"
-              fill="url(#shieldGrad)" opacity="0.9"/>
-        <path d="M30 14 L20 30 L26 30 L22 44 L34 25 L27 25 Z"
-              fill="white" opacity="0.6"/>
-        <path d="M26 7 L43 14 L43 22 C38 18 32 12 26 7 Z" fill="white" opacity="0.1"/>
-        <text x="26" y="36" text-anchor="middle" font-family="Inter,sans-serif"
-              font-size="22" font-weight="900" fill="#052e16" opacity="1"
-              filter="url(#glow)">S</text>
-      </svg>
+      <div style="position:relative;flex-shrink:0">
+        <div style="position:absolute;inset:-10px;background:radial-gradient(circle,{T['primary']}40 0%,transparent 70%);border-radius:50%;pointer-events:none"></div>
+        <svg width="62" height="70" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="shieldGrad" x1="0" y1="0" x2="52" y2="58" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="{T['primary_light']}"/>
+              <stop offset="100%" stop-color="{T['primary_dark']}"/>
+            </linearGradient>
+            <linearGradient id="boltGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="{T['accent']}"/>
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z"
+                fill="url(#shieldGrad)" opacity="0.15"/>
+          <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z"
+                stroke="{T['primary']}" stroke-width="1.5" fill="none"/>
+          <path d="M26 7 L43 14 L43 28 C43 39 33 48 26 51 C19 48 9 39 9 28 L9 14 Z"
+                fill="url(#shieldGrad)" opacity="0.9"/>
+          <path d="M31 11 L18 31 L25 31 L20 47 L36 24 L28 24 Z"
+                fill="white" opacity="0.8"/>
+          <path d="M26 7 L43 14 L43 22 C38 18 32 12 26 7 Z" fill="white" opacity="0.1"/>
+          <text x="26" y="36" text-anchor="middle" font-family="Inter,sans-serif"
+                font-size="22" font-weight="900" fill="#052e16" opacity="1"
+                filter="url(#glow)">S</text>
+        </svg>
+      </div>
       <div>
         <div class="hero-title">SaverAI</div>
         <div class="hero-sub">TURN EVERY PAYMENT INTO SAVINGS</div>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SaverAI — AI in Action</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#059669;--green-l:#34d399;--green-d:#047857;
+  --bg:#050d09;--card:#0f1f1a;--card2:#122b24;
+  --text:#f0f0f0;--muted:#64748b;--border:#ffffff12;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
+
+/* ── CANVAS BACKGROUND ── */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── SLIDES ── */
+.deck{position:relative;width:100vw;height:100vh;z-index:1}
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:56px 88px;
+  opacity:0;pointer-events:none;
+  transition:opacity 0s;
+  overflow:hidden;
+}
+.slide.active{opacity:1;pointer-events:all}
+
+/* ── ANIMATED ELEMENTS ── */
+.fly{opacity:0;transform:translateY(40px);transition:opacity 1.1s ease, transform 1.1s cubic-bezier(0.22,1,0.36,1)}
+.fly.from-left{transform:translateX(-60px)}
+.fly.from-right{transform:translateX(60px)}
+.fly.from-bottom{transform:translateY(60px)}
+.fly.from-top{transform:translateY(-40px)}
+.slide.active .fly{opacity:1;transform:translate(0,0)}
+
+/* stagger delays */
+.d1{transition-delay:.15s}.d2{transition-delay:.35s}.d3{transition-delay:.55s}
+.d4{transition-delay:.75s}.d5{transition-delay:.95s}.d6{transition-delay:1.15s}
+.d7{transition-delay:1.35s}.d8{transition-delay:1.55s}
+
+/* ── SHARED ── */
+.eyebrow{
+  font-size:.72rem;font-weight:700;letter-spacing:4px;
+  color:var(--green-l);text-transform:uppercase;margin-bottom:18px;
+  display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:'';width:32px;height:2px;background:var(--green-l);display:block}
+.eyebrow::after{content:'';flex:1;height:1px;background:var(--border);display:block}
+
+.glow-text{
+  background:linear-gradient(90deg,#f0f0f0 0%,var(--green-l) 60%,var(--green) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+/* ── NAV ── */
+.nav{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;align-items:center;z-index:99;
+}
+.dot{
+  width:6px;height:6px;border-radius:50%;background:#1e3a30;cursor:pointer;
+  transition:all .3s;border:1px solid #ffffff20;
+}
+.dot.active{background:var(--green-l);width:22px;border-radius:3px}
+.slide-num{
+  position:fixed;bottom:28px;right:44px;font-size:.68rem;
+  color:#334155;letter-spacing:1px;z-index:99;font-weight:600;
+}
+.key-hint{
+  position:fixed;bottom:28px;left:44px;font-size:.68rem;
+  color:#1e3a30;letter-spacing:.5px;z-index:99;
+}
+
+/* ── SLIDE 1: TITLE ── */
+.s1-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 60% 50%, #052e1640 0%, transparent 70%),
+             radial-gradient(ellipse 40% 40% at 80% 20%, #34d39915 0%, transparent 60%);
+  pointer-events:none;
+}
+.s1-title{font-size:5.5rem;font-weight:900;line-height:1;letter-spacing:-3px;margin-bottom:12px}
+.s1-sub{font-size:1rem;color:var(--muted);letter-spacing:2px;font-weight:600;text-transform:uppercase;margin-bottom:48px}
+.s1-pills{display:flex;gap:12px;flex-wrap:wrap}
+.pill{
+  background:#0f1f1a;border:1px solid var(--border);border-radius:100px;
+  padding:8px 20px;font-size:.82rem;color:#94a3b8;
+  display:flex;align-items:center;gap:8px;
+}
+.pill-dot{width:7px;height:7px;border-radius:50%;background:var(--green-l);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+
+.s1-shield{
+  position:absolute;right:80px;top:50%;transform:translateY(-50%);
+  opacity:.12;
+}
+.s1-shield svg{width:320px;height:360px}
+
+.s1-stat-row{
+  position:absolute;bottom:64px;right:88px;
+  display:flex;gap:32px;
+}
+.s1-stat{text-align:right}
+.s1-stat-num{font-size:2rem;font-weight:800;color:var(--green-l)}
+.s1-stat-label{font-size:.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+
+/* ── SLIDE 2: PROBLEM ── */
+.s2-headline{font-size:3.2rem;font-weight:900;line-height:1.1;letter-spacing:-1.5px;margin-bottom:14px;max-width:700px}
+.s2-sub{font-size:.95rem;color:var(--muted);margin-bottom:44px;max-width:580px;line-height:1.7}
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.pain-card{
+  background:linear-gradient(135deg,#0f1f1a,#0a1510);
+  border:1px solid var(--border);border-radius:16px;padding:32px 28px;
+  position:relative;overflow:hidden;
+}
+.pain-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);
+}
+.pain-card::after{
+  content:'';position:absolute;bottom:0;right:0;
+  width:80px;height:80px;border-radius:50%;
+  background:radial-gradient(circle,var(--green)10 0%,transparent 70%);
+  opacity:.15;
+}
+.pain-num{font-size:.7rem;font-weight:700;letter-spacing:3px;color:var(--green-l);margin-bottom:16px;opacity:.7}
+.pain-icon{font-size:2.2rem;margin-bottom:16px}
+.pain-title{font-size:1.05rem;font-weight:700;margin-bottom:10px}
+.pain-desc{font-size:.82rem;color:var(--muted);line-height:1.65}
+.pain-stat{
+  margin-top:20px;font-size:1.5rem;font-weight:800;
+  background:linear-gradient(90deg,var(--green-l),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+/* ── SLIDE 3: HOW IT WORKS ── */
+.pipeline{
+  display:flex;align-items:stretch;gap:0;margin-top:40px;
+}
+.p-step{
+  flex:1;background:#0f1f1a;border:1px solid var(--border);
+  border-radius:16px;padding:32px 28px;position:relative;text-align:center;
+}
+.p-step:not(:last-child)::after{
+  content:'→';position:absolute;right:-18px;top:50%;transform:translateY(-50%);
+  font-size:1.4rem;color:var(--green-l);z-index:2;
+}
+.p-step-icon{font-size:2.4rem;margin-bottom:16px}
+.p-step-label{
+  font-size:.65rem;font-weight:700;letter-spacing:3px;
+  color:var(--green-l);text-transform:uppercase;margin-bottom:8px;
+}
+.p-step-title{font-size:1rem;font-weight:700;margin-bottom:8px}
+.p-step-desc{font-size:.78rem;color:var(--muted);line-height:1.6}
+.p-step-badge{
+  margin-top:14px;display:inline-block;
+  background:var(--green)22;border:1px solid var(--green)55;
+  border-radius:6px;padding:3px 10px;font-size:.7rem;color:var(--green-l);font-weight:600;
+}
+
+.pipeline-gap{width:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+
+/* ── SLIDE 4: FEATURES ── */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+.feat-card{
+  background:#0f1f1a;border:1px solid var(--border);border-radius:16px;
+  padding:32px 28px;position:relative;overflow:hidden;
+  transition:border-color .3s,transform .3s;cursor:default;
+}
+.feat-card:hover{border-color:var(--green)66;transform:translateY(-4px)}
+.feat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--green-d),var(--green-l));opacity:.6;
+}
+.feat-num{
+  font-size:3rem;font-weight:900;color:var(--green-l);opacity:.12;
+  position:absolute;top:16px;right:20px;line-height:1;
+}
+.feat-icon{font-size:2rem;margin-bottom:18px}
+.feat-title{font-size:1.05rem;font-weight:700;margin-bottom:10px}
+.feat-desc{font-size:.82rem;color:var(--muted);line-height:1.65;margin-bottom:14px}
+.feat-tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{
+  font-size:.65rem;font-weight:600;letter-spacing:.5px;
+  background:var(--green)18;border:1px solid var(--green)33;
+  color:var(--green-l);border-radius:4px;padding:2px 8px;
+}
+
+/* ── SLIDE 5: ARCHITECTURE ── */
+.arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px}
+.arch-card{
+  background:linear-gradient(160deg,#0f1f1a,#0a1510);
+  border:1px solid var(--border);border-radius:20px;
+  padding:36px 32px;text-align:center;position:relative;overflow:hidden;
+}
+.arch-card::after{
+  content:'';position:absolute;bottom:-40px;left:50%;transform:translateX(-50%);
+  width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,var(--green)20 0%,transparent 70%);
+}
+.arch-top{
+  font-size:.65rem;font-weight:700;letter-spacing:3px;
+  text-transform:uppercase;margin-bottom:20px;padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+.arch-top.front{color:#60a5fa}
+.arch-top.brain{color:var(--green-l)}
+.arch-top.data{color:#a78bfa}
+.arch-icon-wrap{
+  width:72px;height:72px;border-radius:50%;margin:0 auto 20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;border:2px solid var(--border);background:#0a1510;
+}
+.arch-name{font-size:1.3rem;font-weight:800;margin-bottom:10px}
+.arch-desc{font-size:.8rem;color:var(--muted);line-height:1.7}
+.arch-tags{margin-top:16px;display:flex;flex-direction:column;gap:6px}
+.arch-tag{
+  background:#ffffff08;border:1px solid var(--border);
+  border-radius:6px;padding:4px 10px;font-size:.72rem;color:#94a3b8;
+}
+
+/* ── SLIDE 6: DEMO ── */
+.demo-slide{
+  background:radial-gradient(ellipse 80% 60% at 50% 60%, #052e1640 0%, transparent 70%);
+  text-align:center;align-items:center;
+}
+.demo-label{
+  font-size:.72rem;font-weight:700;letter-spacing:4px;
+  color:var(--green-l);text-transform:uppercase;margin-bottom:24px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+}
+.demo-label::before,.demo-label::after{content:'';width:48px;height:1px;background:var(--green-l);opacity:.4}
+.demo-title{font-size:5rem;font-weight:900;line-height:1;letter-spacing:-2px;margin-bottom:20px}
+.demo-sub{font-size:1rem;color:var(--muted);margin-bottom:52px;max-width:500px}
+.demo-chips{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.demo-chip{
+  background:var(--card);border:1px solid var(--green)44;
+  border-radius:100px;padding:10px 24px;
+  font-size:.82rem;font-weight:600;color:var(--green-l);
+  animation:chipglow 3s infinite;
+}
+.demo-chip:nth-child(2){animation-delay:1s}
+.demo-chip:nth-child(3){animation-delay:2s}
+@keyframes chipglow{
+  0%,100%{border-color:var(--green)44;box-shadow:none}
+  50%{border-color:var(--green-l)88;box-shadow:0 0 16px var(--green)33}
+}
+
+/* ── FLOATING ORB ── */
+.orb{
+  position:absolute;border-radius:50%;pointer-events:none;
+  animation:drift linear infinite;
+}
+@keyframes drift{
+  0%{transform:translate(0,0) scale(1)}
+  25%{transform:translate(20px,-15px) scale(1.05)}
+  50%{transform:translate(-10px,20px) scale(.95)}
+  75%{transform:translate(15px,10px) scale(1.02)}
+  100%{transform:translate(0,0) scale(1)}
+}
+
+/* ── GLOWING BORDER ANIMATION ── */
+@keyframes borderGlow{
+  0%,100%{border-color:var(--border)}
+  50%{border-color:var(--green)55}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="deck">
+
+<!-- ════════════════ SLIDE 1: TITLE ════════════════ -->
+<div class="slide s1 active">
+  <div class="s1-bg"></div>
+
+  <!-- Floating orbs -->
+  <div class="orb" style="width:300px;height:300px;background:radial-gradient(circle,#05966912,transparent 70%);top:-80px;right:200px;animation-duration:12s"></div>
+  <div class="orb" style="width:200px;height:200px;background:radial-gradient(circle,#34d39908,transparent 70%);bottom:60px;right:400px;animation-duration:9s;animation-delay:-4s"></div>
+
+  <!-- Shield ghost -->
+  <div class="s1-shield fly from-right d5">
+    <svg viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z" fill="#34d399" opacity="1"/>
+      <path d="M26 7 L43 14 L43 28 C43 39 33 48 26 51 C19 48 9 39 9 28 L9 14 Z" fill="#34d399" opacity="1"/>
+      <path d="M31 11 L18 31 L25 31 L20 47 L36 24 L28 24 Z" fill="white" opacity="0.8"/>
+      <text x="26" y="36" text-anchor="middle" font-family="Inter,sans-serif"
+            font-size="22" font-weight="900" fill="#052e16" opacity="1">S</text>
+    </svg>
+  </div>
+
+  <div class="eyebrow fly from-left d1">AI in Action · FY27 Q2</div>
+
+  <div class="s1-title fly from-bottom d2">
+    <span class="glow-text">SaverAI</span>
+  </div>
+  <div class="s1-sub fly from-bottom d3">Turn Every Payment Into Savings</div>
+  <div style="font-size:.85rem;color:#34d39966;letter-spacing:1px;font-style:italic;margin-top:-36px;margin-bottom:36px" class="fly from-bottom d3">Not all heroes wear capes.</div>
+
+  <div class="s1-pills fly from-bottom d4">
+    <div class="pill"><span class="pill-dot"></span>Voucher Vault</div>
+    <div class="pill"><span class="pill-dot" style="animation-delay:.7s"></span>Smart Advisor</div>
+    <div class="pill"><span class="pill-dot" style="animation-delay:1.4s"></span>AI Card Recommender</div>
+    <div class="pill"><span class="pill-dot" style="animation-delay:2.1s"></span>Live Coupon Codes</div>
+  </div>
+
+  <div class="s1-stat-row fly from-bottom d6">
+    <div class="s1-stat">
+      <div class="s1-stat-num" data-count="23">0</div>
+      <div class="s1-stat-label">Vouchers Saved</div>
+    </div>
+    <div class="s1-stat">
+      <div class="s1-stat-num" data-count="7">0</div>
+      <div class="s1-stat-label">Cards Managed</div>
+    </div>
+    <div class="s1-stat">
+      <div class="s1-stat-num" data-count="3400" data-prefix="₹">0</div>
+      <div class="s1-stat-label">Savings Found</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SLIDE 2: PROBLEM ════════════════ -->
+<div class="slide s2">
+  <div class="orb" style="width:400px;height:400px;background:radial-gradient(circle,#7f1d1d18,transparent 70%);top:-100px;right:-80px;animation-duration:14s"></div>
+
+  <div class="eyebrow fly from-left d1">The Problem</div>
+  <div class="s2-headline fly from-bottom d2">
+    Your vouchers expire.<br>
+    <span class="glow-text">Your savings disappear.</span>
+  </div>
+  <div class="s2-sub fly from-bottom d3">
+    The average Indian has ₹2,000–5,000 in unused vouchers at any time — scattered across CRED, Amazon, Swiggy, Zomato. Most expire unused, not from carelessness, but from chaos.
+  </div>
+
+  <div class="pain-grid">
+    <div class="pain-card fly from-bottom d4">
+      <div class="pain-num">01</div>
+      <div class="pain-icon">🗂️</div>
+      <div class="pain-title">Scattered Everywhere</div>
+      <div class="pain-desc">Vouchers live across 6+ apps. There's no single view of what you have before you pay.</div>
+      <div class="pain-stat">6+ apps</div>
+    </div>
+    <div class="pain-card fly from-bottom d5">
+      <div class="pain-num">02</div>
+      <div class="pain-icon">💳</div>
+      <div class="pain-title">Wrong Card, Every Time</div>
+      <div class="pain-desc">7 cards in your wallet but you use the same one out of habit — leaving cashback and rewards untouched.</div>
+      <div class="pain-stat">₹3,000+ missed</div>
+    </div>
+    <div class="pain-card fly from-bottom d6">
+      <div class="pain-num">03</div>
+      <div class="pain-icon">⏰</div>
+      <div class="pain-title">Expiry Blindness</div>
+      <div class="pain-desc">No alerts. No reminders. You discover an expired voucher only after it's gone — every single time.</div>
+      <div class="pain-stat">~40% expire unused</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SLIDE 3: HOW AI WORKS ════════════════ -->
+<div class="slide s3">
+  <div class="orb" style="width:350px;height:350px;background:radial-gradient(circle,#05966910,transparent 70%);bottom:-60px;left:-60px;animation-duration:11s"></div>
+
+  <div class="eyebrow fly from-left d1">Under The Hood</div>
+  <div style="font-size:2.6rem;font-weight:900;letter-spacing:-1px;margin-bottom:8px" class="fly from-bottom d2">
+    How the <span class="glow-text">AI</span> works
+  </div>
+  <div style="font-size:.9rem;color:var(--muted);margin-bottom:8px;max-width:560px;line-height:1.6" class="fly from-bottom d3">
+    Every action in SaverAI is powered by a state-of-the-art multimodal LLM — chosen for its speed, vision capability, and structured output quality.
+  </div>
+
+  <div class="pipeline fly from-bottom d4" style="gap:24px;margin-top:32px">
+    <div class="p-step">
+      <div class="p-step-label">Input</div>
+      <div class="p-step-icon">📸</div>
+      <div class="p-step-title">Multimodal Input</div>
+      <div class="p-step-desc">Screenshot, pasted text, or free-form search query. No forms, no manual entry.</div>
+      <div class="p-step-badge">Image · Text · NLP</div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--green-l);font-size:1.6rem;opacity:.6">⟶</div>
+
+    <div class="p-step" style="border-color:var(--green)44;background:linear-gradient(135deg,#0f2e20,#0a1510)">
+      <div class="p-step-label" style="color:var(--green-l)">Brain</div>
+      <div class="p-step-icon">🧠</div>
+      <div class="p-step-title">Multimodal LLM</div>
+      <div class="p-step-desc">Extracts structure from chaos — voucher fields, card benefits, spend-to-reward mapping, semantic search.</div>
+      <div class="p-step-badge">Structured JSON · Zero thinking latency</div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--green-l);font-size:1.6rem;opacity:.6">⟶</div>
+
+    <div class="p-step">
+      <div class="p-step-label">Output</div>
+      <div class="p-step-icon">⚡</div>
+      <div class="p-step-title">Instant Results</div>
+      <div class="p-step-desc">Best card ranked by savings, matched vouchers, live codes — all surfaced before you pay.</div>
+      <div class="p-step-badge">Postgres · Streamlit UI</div>
+    </div>
+  </div>
+
+  <div style="margin-top:28px;display:flex;gap:16px" class="fly from-bottom d5">
+    <div style="flex:1;background:#0f1f1a;border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:center">
+      <span style="font-size:1.4rem">🔍</span>
+      <div>
+        <div style="font-size:.78rem;font-weight:700;color:var(--green-l);margin-bottom:3px">Voucher OCR</div>
+        <div style="font-size:.74rem;color:var(--muted)">Screenshot → structured voucher with code, expiry, terms in one pass</div>
+      </div>
+    </div>
+    <div style="flex:1;background:#0f1f1a;border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:center">
+      <span style="font-size:1.4rem">🎯</span>
+      <div>
+        <div style="font-size:.78rem;font-weight:700;color:var(--green-l);margin-bottom:3px">Semantic Matching</div>
+        <div style="font-size:.74rem;color:var(--muted)">Query "Swiggy dinner" matches food vouchers even without exact keyword</div>
+      </div>
+    </div>
+    <div style="flex:1;background:#0f1f1a;border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;gap:14px;align-items:center">
+      <span style="font-size:1.4rem">💡</span>
+      <div>
+        <div style="font-size:.78rem;font-weight:700;color:var(--green-l);margin-bottom:3px">Spend Analysis</div>
+        <div style="font-size:.74rem;color:var(--muted)">Monthly spend profile → ranked cards with per-category savings breakdown</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SLIDE 4: FEATURES ════════════════ -->
+<div class="slide s4">
+  <div class="eyebrow fly from-left d1">Core Features</div>
+  <div style="font-size:2.8rem;font-weight:900;letter-spacing:-1px;margin-bottom:6px" class="fly from-bottom d2">
+    Three pillars of <span class="glow-text">smarter spending</span>
+  </div>
+  <div style="font-size:.88rem;color:var(--muted);margin-bottom:4px" class="fly from-bottom d3">
+    Built for India. Works before every purchase.
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat-card fly from-bottom d4">
+      <div class="feat-num">01</div>
+      <div class="feat-icon">🎟️</div>
+      <div class="feat-title">Voucher Vault</div>
+      <div class="feat-desc">Upload a screenshot or paste text — AI extracts the promo code, discount, expiry, platform, and all terms automatically. Every voucher in one place.</div>
+      <div class="feat-tags">
+        <span class="tag">OCR</span><span class="tag">Auto-expiry</span><span class="tag">Multi-platform</span>
+      </div>
+    </div>
+
+    <div class="feat-card fly from-bottom d5" style="border-color:var(--green)33">
+      <div class="feat-num">02</div>
+      <div class="feat-icon">🎯</div>
+      <div class="feat-title">Smart Advisor</div>
+      <div class="feat-desc">Type what you're buying. AI semantically matches your saved vouchers, fetches live coupon codes from GrabOn in real time, and ranks your cards by actual savings for that purchase.</div>
+      <div class="feat-tags">
+        <span class="tag">Semantic search</span><span class="tag">Live codes</span><span class="tag">Card ranking</span>
+      </div>
+    </div>
+
+    <div class="feat-card fly from-bottom d6">
+      <div class="feat-num">03</div>
+      <div class="feat-icon">💡</div>
+      <div class="feat-title">Card Recommender</div>
+      <div class="feat-desc">Enter your monthly spend across categories. AI recommends the top 3 cards to get — with exact annual savings, fee waivers, and the best 2-card combo for maximum coverage.</div>
+      <div class="feat-tags">
+        <span class="tag">Spend analysis</span><span class="tag">Net benefit</span><span class="tag">Combo optimizer</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SLIDE 5: ARCHITECTURE ════════════════ -->
+<div class="slide s5">
+  <div class="orb" style="width:500px;height:500px;background:radial-gradient(circle,#05966908,transparent 70%);top:-150px;left:-100px;animation-duration:16s"></div>
+
+  <div class="eyebrow fly from-left d1">Technical Architecture</div>
+  <div style="font-size:2.8rem;font-weight:900;letter-spacing:-1px;margin-bottom:8px" class="fly from-bottom d2">
+    Purpose-built for <span class="glow-text">AI-first delivery</span>
+  </div>
+  <div style="font-size:.88rem;color:var(--muted);margin-bottom:4px;max-width:600px;line-height:1.6" class="fly from-bottom d3">
+    Every component chosen to maximise AI quality and minimise time-to-insight.
+  </div>
+
+  <div class="arch-grid">
+    <div class="arch-card fly from-bottom d4">
+      <div class="arch-top front">Front-End</div>
+      <div class="arch-icon-wrap">🌐</div>
+      <div class="arch-name">Streamlit</div>
+      <div class="arch-desc">Python-native UI with custom CSS — dark theme, animated components, components.html for rich rendering. Zero frontend build tooling.</div>
+      <div class="arch-tags">
+        <div class="arch-tag">Custom CSS theming</div>
+        <div class="arch-tag">components.html for HTML cards</div>
+        <div class="arch-tag">Parallel async execution</div>
+      </div>
+    </div>
+
+    <div class="arch-card fly from-bottom d5" style="border-color:var(--green)44">
+      <div class="arch-top brain">The Brain</div>
+      <div class="arch-icon-wrap" style="border-color:var(--green)44">🧠</div>
+      <div class="arch-name">LLM (Google AI)</div>
+      <div class="arch-desc">Multimodal model handling OCR, NLP extraction, semantic matching, card benefit lookup, and spend-to-reward analysis — all via structured JSON output.</div>
+      <div class="arch-tags">
+        <div class="arch-tag">Zero thinking latency mode</div>
+        <div class="arch-tag">Multimodal — text + vision</div>
+        <div class="arch-tag">Structured JSON output</div>
+      </div>
+    </div>
+
+    <div class="arch-card fly from-bottom d6">
+      <div class="arch-top data">Data Layer</div>
+      <div class="arch-icon-wrap">🗄️</div>
+      <div class="arch-name">PostgreSQL</div>
+      <div class="arch-desc">Neon serverless Postgres for hosted deployment. Full relational schema for vouchers, cards, benefits. Zero config, instant connection.</div>
+      <div class="arch-tags">
+        <div class="arch-tag">Neon.tech serverless</div>
+        <div class="arch-tag">JSONB for benefits & terms</div>
+        <div class="arch-tag">psycopg2 + connection pooling</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SLIDE 6: DEMO ════════════════ -->
+<div class="slide s6 demo-slide">
+  <div class="orb" style="width:600px;height:600px;background:radial-gradient(circle,#05966915,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation-duration:10s"></div>
+  <div class="orb" style="width:300px;height:300px;background:radial-gradient(circle,#34d39910,transparent 70%);top:10%;right:10%;animation-duration:7s;animation-delay:-3s"></div>
+  <div class="orb" style="width:200px;height:200px;background:radial-gradient(circle,#05966912,transparent 70%);bottom:15%;left:8%;animation-duration:13s;animation-delay:-6s"></div>
+
+  <div class="demo-label fly from-top d1">Live Demo</div>
+  <div class="demo-title fly from-bottom d2"><span class="glow-text">See it<br>in action</span></div>
+  <div class="demo-sub fly from-bottom d3">Watch how SaverAI finds the right card and the best voucher — before every purchase, in real time.</div>
+
+  <div class="demo-chips fly from-bottom d4">
+    <div class="demo-chip">🎟️ Voucher Vault</div>
+    <div class="demo-chip">🎯 Smart Advisor</div>
+    <div class="demo-chip">💡 Card Recommender</div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Nav -->
+<div class="nav" id="nav"></div>
+<div class="slide-num" id="slideNum"></div>
+<div class="key-hint">← → to navigate · Space to advance</div>
+
+<script>
+// ── PARTICLE BACKGROUND ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const particles = Array.from({length: 60}, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  r: Math.random() * 1.5 + 0.3,
+  vx: (Math.random() - 0.5) * 0.3,
+  vy: (Math.random() - 0.5) * 0.3,
+  alpha: Math.random() * 0.4 + 0.1,
+}));
+
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(52,211,153,${p.alpha})`;
+    ctx.fill();
+    p.x += p.vx; p.y += p.vy;
+    if(p.x < 0) p.x = canvas.width;
+    if(p.x > canvas.width) p.x = 0;
+    if(p.y < 0) p.y = canvas.height;
+    if(p.y > canvas.height) p.y = 0;
+  });
+
+  // draw connections
+  particles.forEach((a, i) => {
+    particles.slice(i+1).forEach(b => {
+      const d = Math.hypot(a.x-b.x, a.y-b.y);
+      if(d < 120) {
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = `rgba(5,150,105,${0.08*(1-d/120)})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    });
+  });
+
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// ── SLIDES ──
+const slides = document.querySelectorAll('.slide');
+const nav = document.getElementById('nav');
+const slideNum = document.getElementById('slideNum');
+let current = 0;
+
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  nav.appendChild(d);
+});
+
+function goTo(n) {
+  n = Math.max(0, Math.min(n, slides.length-1));
+  slides[current].classList.remove('active');
+  nav.children[current].classList.remove('active');
+  current = n;
+  slides[current].classList.add('active');
+  nav.children[current].classList.add('active');
+  slideNum.textContent = `${current+1} / ${slides.length}`;
+  // trigger counters
+  animateCounters(slides[current]);
+}
+goTo(0);
+
+document.addEventListener('keydown', e => {
+  if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();goTo(current+1)}
+  if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();goTo(current-1)}
+});
+
+// ── ANIMATED COUNTERS ──
+function animateCounters(slide) {
+  slide.querySelectorAll('[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    const prefix = el.dataset.prefix || '';
+    const suffix = el.dataset.suffix || '';
+    let start = 0;
+    const dur = 1200;
+    const step = timestamp => {
+      if(!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const val = Math.round(ease * target);
+      el.textContent = prefix + (val >= 1000 ? val.toLocaleString('en-IN') : val) + suffix;
+      if(progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+</script>
+</body>
+</html>
