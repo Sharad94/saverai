@@ -621,7 +621,7 @@ st.markdown(f"""
       <div>
         <div class="hero-title">SaverAI</div>
         <div class="hero-sub">TURN EVERY PAYMENT INTO SAVINGS</div>
-        <div style="color:#34d39955;font-size:0.7rem;margin-top:2px;letter-spacing:0.3px;font-style:italic">Not all heroes wear capes.</div>
+        <div style="color:#34d39988;font-size:0.7rem;margin-top:2px;letter-spacing:0.3px;font-style:italic;font-weight:700">Not all heroes wear capes.</div>
       </div>
     </div>
     <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
