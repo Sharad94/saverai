@@ -565,23 +565,64 @@ window.addEventListener('load', resize);
         st.rerun()
 
 
-# ── PROFILE BADGE (fixed top-right) ──────────────────────────────────────────
-st.markdown(f"""
-<div style="position:fixed;top:14px;right:16px;z-index:9999;
-     display:flex;align-items:center;gap:8px;
-     background:{T['card']};border:1px solid #ffffff12;border-radius:100px;
-     padding:5px 12px 5px 8px;backdrop-filter:blur(8px)">
-  <div style="width:28px;height:28px;border-radius:50%;
-       background:linear-gradient(135deg,{T['primary']},{T['primary_dark']});
-       display:flex;align-items:center;justify-content:center;
-       font-size:0.72rem;font-weight:800;color:white;flex-shrink:0;
-       border:1.5px solid {T['primary_light']}55">SM</div>
-  <div>
-    <div style="font-size:0.75rem;font-weight:600;color:#f0f0f0;line-height:1.2">Sharad Maheshwari</div>
-    <div style="font-size:0.6rem;color:#64748b;line-height:1">Personal Vault</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+# ── PROFILE BADGE (injected into parent DOM via components.html) ──────────────
+components.html(f"""
+<script>
+(function() {{
+  const parentDoc = window.parent.document;
+  if (parentDoc.getElementById('saver-profile-badge')) return;
+
+  const badge = parentDoc.createElement('div');
+  badge.id = 'saver-profile-badge';
+  badge.innerHTML = `
+    <div id="spb-trigger" style="display:flex;align-items:center;gap:8px;cursor:pointer;
+         background:#0f1f1a;border:1px solid #ffffff15;border-radius:100px;
+         padding:5px 14px 5px 6px;backdrop-filter:blur(8px)">
+      <div style="width:30px;height:30px;border-radius:50%;
+           background:linear-gradient(135deg,{T['primary']},{T['primary_dark']});
+           display:flex;align-items:center;justify-content:center;
+           font-size:0.75rem;font-weight:800;color:white;flex-shrink:0;
+           border:2px solid {T['primary_light']}55;font-family:Inter,sans-serif">SM</div>
+      <div style="font-family:Inter,sans-serif">
+        <div style="font-size:0.78rem;font-weight:600;color:#f0f0f0;line-height:1.3">Sharad Maheshwari</div>
+        <div style="font-size:0.62rem;color:#64748b;line-height:1">Personal Vault</div>
+      </div>
+      <div style="color:#64748b;font-size:0.65rem;margin-left:2px">▾</div>
+    </div>
+    <div id="spb-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;
+         background:#1e293b;border:1px solid #ffffff15;border-radius:10px;
+         min-width:160px;overflow:hidden;box-shadow:0 8px 24px #00000055;z-index:99999">
+      <div class="spb-item" style="padding:10px 16px;font-size:0.82rem;color:#94a3b8;
+           cursor:default;border-bottom:1px solid #ffffff0d;font-family:Inter,sans-serif">
+        👤 Profile
+      </div>
+      <div class="spb-item" style="padding:10px 16px;font-size:0.82rem;color:#f87171;
+           cursor:default;font-family:Inter,sans-serif">
+        🚪 Logout
+      </div>
+    </div>
+  `;
+  badge.style.cssText = 'position:fixed;top:14px;right:16px;z-index:99999;';
+
+  const trigger = badge.querySelector('#spb-trigger');
+  const dropdown = badge.querySelector('#spb-dropdown');
+  trigger.addEventListener('click', () => {{
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+  }});
+  parentDoc.addEventListener('click', (e) => {{
+    if (!badge.contains(e.target)) dropdown.style.display = 'none';
+  }});
+
+  // hover effect on items
+  badge.querySelectorAll('.spb-item').forEach(el => {{
+    el.addEventListener('mouseenter', () => el.style.background = '#ffffff08');
+    el.addEventListener('mouseleave', () => el.style.background = 'transparent');
+  }});
+
+  parentDoc.body.appendChild(badge);
+}})();
+</script>
+""", height=0)
 
 # ── HEADER ───────────────────────────────────────────────────────────────────
 
