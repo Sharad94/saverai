@@ -269,6 +269,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   0%,100%{opacity:.7;transform:scale(1)}
   50%{opacity:1;transform:scale(1.08)}
 }
+@keyframes shieldFlyToTop{
+  from{opacity:.85;transform:translate(140px,68vh) scale(2.4)}
+  to  {opacity:1;  transform:translate(0,0)        scale(1)}
+}
+.shield-fly-in{
+  animation:shieldFlyToTop 1s cubic-bezier(0.22,1,0.36,1) forwards !important;
+}
+@keyframes shieldFlyFadeOut{
+  from{opacity:1}
+  to  {opacity:0;transform:scale(.6) translate(0,-30px)}
+}
+.shield-fly-out{
+  animation:shieldFlyFadeOut 0.4s ease-in forwards !important;
+}
 </style>
 </head>
 <body>
@@ -284,8 +298,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
     <div style="font-size:.68rem;color:#34d39977;font-weight:700;letter-spacing:1px;font-style:italic">Not all heroes wear capes.</div>
   </div>
   <div style="position:relative;flex-shrink:0">
-    <div style="position:absolute;inset:-36px;background:radial-gradient(circle,#05966960 0%,transparent 70%);border-radius:50%;pointer-events:none;animation:shieldpulse 3s ease-in-out infinite"></div>
-    <svg width="120" height="136" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div style="position:absolute;inset:-54px;background:radial-gradient(circle,#05966960 0%,transparent 70%);border-radius:50%;pointer-events:none;animation:shieldpulse 3s ease-in-out infinite"></div>
+    <svg width="180" height="204" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="psg" x1="0" y1="0" x2="52" y2="58" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#34d399"/>
@@ -666,17 +680,41 @@ slides.forEach((_, i) => {
 });
 
 const persistentShield = document.getElementById('persistent-shield');
+const bottomShield = document.querySelector('.s1-shield');
 
 function goTo(n) {
   n = Math.max(0, Math.min(n, slides.length-1));
+  const prev = current;
   slides[current].classList.remove('active');
   nav.children[current].classList.remove('active');
   current = n;
   slides[current].classList.add('active');
   nav.children[current].classList.add('active');
   slideNum.textContent = `${current+1} / ${slides.length}`;
-  persistentShield.style.opacity = current === 0 ? '0' : '1';
-  persistentShield.style.pointerEvents = current === 0 ? 'none' : 'all';
+
+  if(prev === 0 && current === 1) {
+    // fly from bottom-right to top-right
+    persistentShield.style.opacity = '1';
+    persistentShield.style.pointerEvents = 'all';
+    persistentShield.classList.remove('shield-fly-out');
+    persistentShield.classList.remove('shield-fly-in');
+    void persistentShield.offsetWidth; // force reflow
+    persistentShield.classList.add('shield-fly-in');
+    // fade out bottom shield
+    bottomShield.classList.add('shield-fly-out');
+  } else if(current === 0) {
+    // going back to slide 1 — hide persistent, restore bottom
+    persistentShield.classList.remove('shield-fly-in');
+    persistentShield.style.opacity = '0';
+    persistentShield.style.pointerEvents = 'none';
+    bottomShield.classList.remove('shield-fly-out');
+  } else {
+    // any other slide — just show persistent
+    persistentShield.classList.remove('shield-fly-in');
+    persistentShield.style.opacity = '1';
+    persistentShield.style.pointerEvents = 'all';
+  }
+
   animateCounters(slides[current]);
 }
 goTo(0);
