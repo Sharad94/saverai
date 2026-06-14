@@ -94,9 +94,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 
 .s1-shield{
   position:absolute;right:60px;bottom:40px;
-  opacity:.18;
+  opacity:.35;
 }
-.s1-shield svg{width:380px;height:430px}
+.s1-shield svg{
+  width:380px;height:430px;
+  filter:drop-shadow(0 0 40px #34d399) drop-shadow(0 0 80px #05966988);
+}
 
 .s1-stat-row{
   position:absolute;bottom:64px;left:88px;
@@ -317,9 +320,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   <!-- Floating orbs -->
   <div class="orb" style="width:300px;height:300px;background:radial-gradient(circle,#05966912,transparent 70%);top:-80px;right:200px;animation-duration:12s"></div>
   <div class="orb" style="width:200px;height:200px;background:radial-gradient(circle,#34d39908,transparent 70%);bottom:60px;right:400px;animation-duration:9s;animation-delay:-4s"></div>
-
-  <!-- Shield ghost glow (outside opacity div so it's fully visible) -->
-  <div class="fly from-right d5" style="position:absolute;right:60px;bottom:40px;width:380px;height:430px;background:radial-gradient(ellipse 60% 60% at 50% 50%,#05966940 0%,transparent 70%);border-radius:50%;pointer-events:none;animation:shieldpulse 4s ease-in-out infinite"></div>
 
   <!-- Shield ghost -->
   <div class="s1-shield fly from-right d5">
