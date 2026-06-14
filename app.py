@@ -66,34 +66,20 @@ with _col_theme:
     theme_name = st.radio("Theme", list(THEMES.keys()), horizontal=True,
                           label_visibility="collapsed", index=0)
 T = THEMES[theme_name]
-_col_profile.markdown(f"""
-<div style="display:flex;justify-content:flex-end;align-items:center;height:100%;padding-top:4px">
-  <div style="position:relative;display:inline-block">
-    <div id="spb-trigger" onclick="var d=document.getElementById('spb-dd');d.style.display=d.style.display==='block'?'none':'block'"
-         style="display:flex;align-items:center;gap:8px;cursor:pointer;
-                background:{T['card']};border:1px solid #ffffff18;border-radius:100px;
-                padding:5px 12px 5px 5px">
-      <div style="width:28px;height:28px;border-radius:50%;flex-shrink:0;
-           background:linear-gradient(135deg,{T['primary']},{T['primary_dark']});
-           display:flex;align-items:center;justify-content:center;
-           font-size:0.7rem;font-weight:800;color:white;
-           border:1.5px solid {T['primary_light']}55">SM</div>
-      <div>
-        <div style="font-size:0.75rem;font-weight:600;color:#f0f0f0;line-height:1.3;white-space:nowrap">Sharad Maheshwari</div>
-        <div style="font-size:0.6rem;color:#64748b;line-height:1">Personal Vault</div>
-      </div>
-      <div style="color:#64748b;font-size:0.6rem">▾</div>
-    </div>
-    <div id="spb-dd" style="display:none;position:absolute;top:calc(100% + 4px);right:0;
-         background:#1e293b;border:1px solid #ffffff18;border-radius:10px;
-         min-width:150px;overflow:hidden;box-shadow:0 8px 24px #00000066;z-index:9999">
-      <div style="padding:10px 14px;font-size:0.8rem;color:#94a3b8;
-           border-bottom:1px solid #ffffff0d;cursor:default">👤 Profile</div>
-      <div style="padding:10px 14px;font-size:0.8rem;color:#f87171;cursor:default">🚪 Logout</div>
-    </div>
+with _col_profile:
+    st.markdown("<div style='height:2px'></div>", unsafe_allow_html=True)
+    with st.popover("SM  Sharad Maheshwari ▾", use_container_width=False):
+        st.markdown(f"""
+<div style="font-family:Inter,sans-serif;min-width:160px">
+  <div style="padding:8px 4px 10px;border-bottom:1px solid #ffffff12">
+    <div style="font-size:0.82rem;font-weight:600;color:#f0f0f0">Sharad Maheshwari</div>
+    <div style="font-size:0.7rem;color:#64748b;margin-top:2px">Personal Vault</div>
   </div>
-</div>
-""", unsafe_allow_html=True)
+  <div style="padding-top:8px;display:flex;flex-direction:column;gap:2px">
+    <div style="padding:7px 8px;border-radius:6px;font-size:0.82rem;color:#94a3b8;cursor:default">👤 Profile</div>
+    <div style="padding:7px 8px;border-radius:6px;font-size:0.82rem;color:#f87171;cursor:default">🚪 Logout</div>
+  </div>
+</div>""", unsafe_allow_html=True)
 
 st.markdown(f"""
 <style>
