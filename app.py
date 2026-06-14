@@ -61,9 +61,39 @@ THEMES = {
     },
 }
 
-theme_name = st.radio("Theme", list(THEMES.keys()), horizontal=True,
-                      label_visibility="collapsed", index=0)
+_col_theme, _col_profile = st.columns([3, 1])
+with _col_theme:
+    theme_name = st.radio("Theme", list(THEMES.keys()), horizontal=True,
+                          label_visibility="collapsed", index=0)
 T = THEMES[theme_name]
+_col_profile.markdown(f"""
+<div style="display:flex;justify-content:flex-end;align-items:center;height:100%;padding-top:4px">
+  <div style="position:relative;display:inline-block">
+    <div id="spb-trigger" onclick="var d=document.getElementById('spb-dd');d.style.display=d.style.display==='block'?'none':'block'"
+         style="display:flex;align-items:center;gap:8px;cursor:pointer;
+                background:{T['card']};border:1px solid #ffffff18;border-radius:100px;
+                padding:5px 12px 5px 5px">
+      <div style="width:28px;height:28px;border-radius:50%;flex-shrink:0;
+           background:linear-gradient(135deg,{T['primary']},{T['primary_dark']});
+           display:flex;align-items:center;justify-content:center;
+           font-size:0.7rem;font-weight:800;color:white;
+           border:1.5px solid {T['primary_light']}55">SM</div>
+      <div>
+        <div style="font-size:0.75rem;font-weight:600;color:#f0f0f0;line-height:1.3;white-space:nowrap">Sharad Maheshwari</div>
+        <div style="font-size:0.6rem;color:#64748b;line-height:1">Personal Vault</div>
+      </div>
+      <div style="color:#64748b;font-size:0.6rem">▾</div>
+    </div>
+    <div id="spb-dd" style="display:none;position:absolute;top:calc(100% + 4px);right:0;
+         background:#1e293b;border:1px solid #ffffff18;border-radius:10px;
+         min-width:150px;overflow:hidden;box-shadow:0 8px 24px #00000066;z-index:9999">
+      <div style="padding:10px 14px;font-size:0.8rem;color:#94a3b8;
+           border-bottom:1px solid #ffffff0d;cursor:default">👤 Profile</div>
+      <div style="padding:10px 14px;font-size:0.8rem;color:#f87171;cursor:default">🚪 Logout</div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown(f"""
 <style>
@@ -565,65 +595,6 @@ window.addEventListener('load', resize);
         st.rerun()
 
 
-# ── PROFILE BADGE ─────────────────────────────────────────────────────────────
-st.markdown(f"""
-<style>
-/* Fix stacking context so position:fixed works inside Streamlit */
-.stApp, [data-testid="stAppViewContainer"] {{
-    transform: none !important;
-    will-change: unset !important;
-}}
-#saver-profile-badge {{
-    position: fixed;
-    top: 14px;
-    right: 16px;
-    z-index: 99999;
-    font-family: 'Inter', sans-serif;
-}}
-#spb-trigger {{
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    background: {T['card']};
-    border: 1px solid #ffffff15;
-    border-radius: 100px;
-    padding: 5px 14px 5px 6px;
-}}
-#spb-dropdown {{
-    display: none;
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    background: #1e293b;
-    border: 1px solid #ffffff15;
-    border-radius: 10px;
-    min-width: 160px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px #00000055;
-}}
-.spb-item {{ padding: 10px 16px; font-size: 0.82rem; cursor: default; }}
-.spb-item:hover {{ background: #ffffff08; }}
-</style>
-<div id="saver-profile-badge">
-  <div id="spb-trigger" onclick="var d=document.getElementById('spb-dropdown');d.style.display=d.style.display==='block'?'none':'block'">
-    <div style="width:30px;height:30px;border-radius:50%;
-         background:linear-gradient(135deg,{T['primary']},{T['primary_dark']});
-         display:flex;align-items:center;justify-content:center;
-         font-size:0.72rem;font-weight:800;color:white;
-         border:2px solid {T['primary_light']}55">SM</div>
-    <div>
-      <div style="font-size:0.78rem;font-weight:600;color:#f0f0f0;line-height:1.3">Sharad Maheshwari</div>
-      <div style="font-size:0.62rem;color:#64748b;line-height:1">Personal Vault</div>
-    </div>
-    <div style="color:#64748b;font-size:0.65rem;margin-left:2px">▾</div>
-  </div>
-  <div id="spb-dropdown">
-    <div class="spb-item" style="color:#94a3b8;border-bottom:1px solid #ffffff0d">👤 Profile</div>
-    <div class="spb-item" style="color:#f87171">🚪 Logout</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
 
 # ── HEADER ───────────────────────────────────────────────────────────────────
 
