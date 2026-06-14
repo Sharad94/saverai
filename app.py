@@ -609,7 +609,7 @@ st.markdown(f"""
         <path d="M26 7 L43 14 L43 28 C43 39 33 48 26 51 C19 48 9 39 9 28 L9 14 Z"
               fill="url(#shieldGrad)" opacity="0.9"/>
         <path d="M30 14 L20 30 L26 30 L22 44 L34 25 L27 25 Z"
-              fill="white" opacity="0.2"/>
+              fill="white" opacity="0.6"/>
         <path d="M26 7 L43 14 L43 22 C38 18 32 12 26 7 Z" fill="white" opacity="0.1"/>
         <text x="26" y="36" text-anchor="middle" font-family="Inter,sans-serif"
               font-size="22" font-weight="900" fill="#052e16" opacity="1"
