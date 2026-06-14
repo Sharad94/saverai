@@ -61,7 +61,7 @@ THEMES = {
     },
 }
 
-_col_theme, _col_badge, _col_pop = st.columns([3, 1.2, 0.18])
+_col_theme, _col_badge = st.columns([3, 1.2])
 with _col_theme:
     theme_name = st.radio("Theme", list(THEMES.keys()), horizontal=True,
                           label_visibility="collapsed", index=0)
@@ -81,18 +81,6 @@ _col_badge.markdown(f"""
       <div style="font-size:0.6rem;color:#64748b;line-height:1">Personal Vault</div>
     </div>
   </div>
-</div>""", unsafe_allow_html=True)
-with _col_pop:
-    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
-    with st.popover("▾"):
-        st.markdown(f"""
-<div style="font-family:Inter,sans-serif">
-  <div style="padding:4px 4px 10px;border-bottom:1px solid #ffffff12;margin-bottom:6px">
-    <div style="font-size:0.82rem;font-weight:600;color:#f0f0f0">Sharad Maheshwari</div>
-    <div style="font-size:0.7rem;color:#64748b;margin-top:2px">Personal Vault</div>
-  </div>
-  <div style="padding:6px 4px;font-size:0.82rem;color:#94a3b8;cursor:default">👤 Profile</div>
-  <div style="padding:6px 4px;font-size:0.82rem;color:#f87171;cursor:default">🚪 Logout</div>
 </div>""", unsafe_allow_html=True)
 
 st.markdown(f"""
