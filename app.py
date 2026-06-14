@@ -61,9 +61,8 @@ THEMES = {
     },
 }
 
-with st.sidebar:
-    st.markdown("### 🎨 Theme")
-    theme_name = st.radio("Theme", list(THEMES.keys()), label_visibility="collapsed", index=0)
+theme_name = st.radio("Theme", list(THEMES.keys()), horizontal=True,
+                      label_visibility="collapsed", index=0)
 T = THEMES[theme_name]
 
 st.markdown(f"""
@@ -73,17 +72,29 @@ html, body, [class*="css"] {{ font-family: 'Inter', sans-serif; }}
 .stApp {{ background: {T['bg']}; color: #f0f0f0; }}
 [data-testid="stToolbar"], .stDeployButton, #MainMenu,
 [data-testid="stMainMenuPopover"] {{ display: none !important; }}
-[data-testid="collapsedControl"] {{ display: flex !important; }}
+[data-testid="collapsedControl"] {{ display: none !important; }}
+
+/* Theme picker — hide labels, show only the radio dot, shrink the row */
+div[data-testid="stHorizontalBlock"]:has(div[data-testid="stRadio"]) {{
+    margin-bottom: -8px;
+}}
+div[data-testid="stRadio"] > label {{ display: none; }}
+div[data-testid="stRadio"] [data-testid="stMarkdownContainer"] p {{
+    font-size: 0.7rem !important; color: #475569 !important;
+}}
+div[data-testid="stRadio"] > div {{ gap: 6px !important; }}
+div[data-testid="stRadio"] label {{ padding: 2px 8px !important; font-size: 0.72rem !important; }}
 
 .hero {{
     background: {T['hero_grad']};
-    border-radius: 14px; padding: 14px 24px; margin-bottom: 16px;
+    border-radius: 14px; padding: 16px 24px; margin-bottom: 16px;
     border: 1px solid #ffffff10;
 }}
 .hero-inner {{ display: flex; align-items: center; gap: 14px; }}
-.hero h1 {{ font-size: 1.5rem; font-weight: 700; margin: 0 0 2px 0;
-    background: {T['title_grad']}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }}
-.hero p {{ color: #94a3b8; margin: 0; font-size: 0.85rem; }}
+.hero-stat {{
+    background: #ffffff0d; border: 1px solid #ffffff12; border-radius: 20px;
+    padding: 3px 12px; font-size: 0.78rem; color: #94a3b8; white-space: nowrap;
+}}
 
 .stTabs [data-baseweb="tab-list"] {{
     background: {T['card']}; border-radius: 12px; padding: 4px; gap: 2px;
@@ -540,50 +551,75 @@ window.addEventListener('load', resize);
 </div>
 </body></html>""", height=height, scrolling=True)
 
-    col_del, _ = st.columns([1, 5])
-    if col_del.button("🗑 Delete", key=f"{key_prefix}del_{c['id']}"):
+    _, col_del = st.columns([5, 1])
+    if col_del.button("🗑", key=f"{key_prefix}del_{c['id']}", help="Delete card"):
         delete_card(c["id"])
         st.rerun()
 
 
 # ── HEADER ───────────────────────────────────────────────────────────────────
 
+@st.cache_data(ttl=60)
+def _hero_stats():
+    from datetime import date as _date
+    try:
+        active = get_all_vouchers(view="active")
+        cards = get_all_cards()
+        expiring = [v for v in active if v.get("expiry_date") and
+                    (_date.fromisoformat(str(v["expiry_date"])) - _date.today()).days <= 7]
+        return len(active), len(cards), len(expiring)
+    except Exception:
+        return 0, 0, 0
+
+_v_count, _c_count, _exp_count = _hero_stats()
+_exp_html = (f'<div class="hero-stat" style="color:#f59e0b">⏰ {_exp_count} expiring soon</div>'
+             if _exp_count else "")
+
 st.markdown(f"""
 <div class="hero">
-  <div class="hero-inner">
-    <svg width="38" height="42" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="shieldGrad" x1="0" y1="0" x2="52" y2="58" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="{T['primary_light']}"/>
-          <stop offset="100%" stop-color="{T['primary_dark']}"/>
-        </linearGradient>
-        <linearGradient id="boltGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="100%" stop-color="{T['accent']}"/>
-        </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      <!-- Shield shape -->
-      <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z"
-            fill="url(#shieldGrad)" opacity="0.15"/>
-      <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z"
-            stroke="{T['primary']}" stroke-width="1.5" fill="none"/>
-      <!-- Shield inner fill -->
-      <path d="M26 7 L43 14 L43 28 C43 39 33 48 26 51 C19 48 9 39 9 28 L9 14 Z"
-            fill="url(#shieldGrad)" opacity="0.9"/>
-      <!-- Lightning bolt -->
-      <path d="M30 14 L20 30 L26 30 L22 44 L34 25 L27 25 Z"
-            fill="url(#boltGrad)" filter="url(#glow)" opacity="0.95"/>
-      <!-- Subtle shine on shield -->
-      <path d="M26 7 L43 14 L43 22 C38 18 32 12 26 7 Z"
-            fill="white" opacity="0.1"/>
-    </svg>
-    <div>
-      <h1>SaverAI</h1>
-      <p>Save before you swipe.</p>
+  <div class="hero-inner" style="justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:16px">
+      <svg width="44" height="50" viewBox="0 0 52 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="shieldGrad" x1="0" y1="0" x2="52" y2="58" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="{T['primary_light']}"/>
+            <stop offset="100%" stop-color="{T['primary_dark']}"/>
+          </linearGradient>
+          <linearGradient id="boltGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="{T['accent']}"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z"
+              fill="url(#shieldGrad)" opacity="0.15"/>
+        <path d="M26 2 L48 10 L48 28 C48 41 36 52 26 56 C16 52 4 41 4 28 L4 10 Z"
+              stroke="{T['primary']}" stroke-width="1.5" fill="none"/>
+        <path d="M26 7 L43 14 L43 28 C43 39 33 48 26 51 C19 48 9 39 9 28 L9 14 Z"
+              fill="url(#shieldGrad)" opacity="0.9"/>
+        <path d="M30 14 L20 30 L26 30 L22 44 L34 25 L27 25 Z"
+              fill="url(#boltGrad)" filter="url(#glow)" opacity="0.95"/>
+        <path d="M26 7 L43 14 L43 22 C38 18 32 12 26 7 Z" fill="white" opacity="0.1"/>
+      </svg>
+      <div>
+        <div style="font-size:1.9rem;font-weight:800;letter-spacing:-0.5px;
+             background:{T['title_grad']};-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+          SaverAI
+        </div>
+        <div style="color:#64748b;font-size:0.82rem;margin-top:1px;letter-spacing:0.3px">
+          SAVE BEFORE YOU SWIPE
+        </div>
+      </div>
+    </div>
+    <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <div style="display:flex;gap:10px">
+        <div class="hero-stat">🎟️ {_v_count} vouchers</div>
+        <div class="hero-stat">💳 {_c_count} cards</div>
+      </div>
+      {_exp_html}
     </div>
   </div>
 </div>
