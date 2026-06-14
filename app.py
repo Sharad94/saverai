@@ -565,6 +565,24 @@ window.addEventListener('load', resize);
         st.rerun()
 
 
+# ── PROFILE BADGE (fixed top-right) ──────────────────────────────────────────
+st.markdown(f"""
+<div style="position:fixed;top:14px;right:16px;z-index:9999;
+     display:flex;align-items:center;gap:8px;
+     background:{T['card']};border:1px solid #ffffff12;border-radius:100px;
+     padding:5px 12px 5px 8px;backdrop-filter:blur(8px)">
+  <div style="width:28px;height:28px;border-radius:50%;
+       background:linear-gradient(135deg,{T['primary']},{T['primary_dark']});
+       display:flex;align-items:center;justify-content:center;
+       font-size:0.72rem;font-weight:800;color:white;flex-shrink:0;
+       border:1.5px solid {T['primary_light']}55">SM</div>
+  <div>
+    <div style="font-size:0.75rem;font-weight:600;color:#f0f0f0;line-height:1.2">Sharad Maheshwari</div>
+    <div style="font-size:0.6rem;color:#64748b;line-height:1">Personal Vault</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
 # ── HEADER ───────────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=60)
@@ -625,16 +643,6 @@ st.markdown(f"""
       </div>
     </div>
     <div style="text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="text-align:right">
-          <div style="font-size:0.82rem;font-weight:600;color:#f0f0f0">Sharad Maheshwari</div>
-          <div style="font-size:0.68rem;color:#64748b">Personal Vault</div>
-        </div>
-        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,{T['primary']},{T['primary_dark']});
-             display:flex;align-items:center;justify-content:center;
-             font-size:0.85rem;font-weight:800;color:white;flex-shrink:0;
-             border:2px solid {T['primary_light']}44">SM</div>
-      </div>
       <div style="display:flex;gap:8px">
         <div class="hero-stat">🎟️ {_v_count} vouchers</div>
         <div class="hero-stat">💳 {_c_count} cards</div>
