@@ -817,16 +817,16 @@ with tab_smart:
         ph_vouchers = st.empty()
         ph_vouchers.info("🔍 Searching your vault…")
 
+        _section_header("💳", "Best Card to Use", "Ranked by savings for this purchase")
+        ph_cards = st.empty()
+        ph_cards.info("🤖 Analysing your cards…")
+
         _section_header("⚡", "Live Online Codes", "Real-time codes from GrabOn")
         ph_grabon = st.empty()
         ph_grabon.info("⚡ Fetching live codes from GrabOn…")
 
         _section_header("🔍", "Search More Online")
         _render_online_links()
-
-        _section_header("💳", "Best Card to Use", "Ranked by savings for this purchase")
-        ph_cards = st.empty()
-        ph_cards.info("🤖 Analysing your cards…")
 
         from concurrent.futures import as_completed
         collected: dict = {}
@@ -869,6 +869,9 @@ with tab_smart:
         _section_header("🎟️", "Your Saved Vouchers", "Matching vouchers from your vault")
         _render_advisor_vouchers(cached["vouchers"])
 
+        _section_header("💳", "Best Card to Use", "Ranked by savings for this purchase")
+        _render_card_advice(cached["advice"])
+
         _section_header("⚡", "Live Online Codes", "Real-time codes from GrabOn")
         if not cached["grabon"]:
             st.caption("No promo codes found on GrabOn for this search.")
@@ -878,9 +881,6 @@ with tab_smart:
 
         _section_header("🔍", "Search More Online")
         _render_online_links()
-
-        _section_header("💳", "Best Card to Use", "Ranked by savings for this purchase")
-        _render_card_advice(cached["advice"])
 
 
 # ── ADD VOUCHER ───────────────────────────────────────────────────────────────
