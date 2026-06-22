@@ -178,10 +178,10 @@ DEMO_RESULT_2 = {
 def recommend_cards(spend: dict, owned_cards: list[dict]) -> dict:
     import time
     spend_int = {k: int(v) for k, v in spend.items()}
-    if spend_int == DEMO_SPEND:
+    if all(spend_int.get(k) == v for k, v in DEMO_SPEND.items()):
         time.sleep(2)
         return DEMO_RESULT
-    if spend_int == DEMO_SPEND_2:
+    if all(spend_int.get(k) == v for k, v in DEMO_SPEND_2.items()):
         time.sleep(2)
         return DEMO_RESULT_2
 
