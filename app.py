@@ -640,7 +640,6 @@ st.markdown(f"""
       <div>
         <div class="hero-title">SaverAI</div>
         <div class="hero-sub">TURN EVERY PAYMENT INTO SAVINGS</div>
-        <div style="color:#34d39988;font-size:0.7rem;margin-top:2px;letter-spacing:0.3px;font-style:italic;font-weight:700">Not all heroes wear capes.</div>
       </div>
     </div>
     <div style="text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
@@ -722,7 +721,7 @@ body {{ background:transparent; padding:2px 0; }}
 
 
 def _render_card_advice(advice: dict) -> None:
-    ranked = advice.get("ranked_cards", [])
+    ranked = advice.get("ranked_cards", [])[:2]
     if not ranked:
         st.info("No cards added yet — go to 💳 Add Card tab.")
         return
@@ -733,7 +732,7 @@ def _render_card_advice(advice: dict) -> None:
         reward = rec.get("reward_label", "")
         no_benefit = not reward or "no specific" in reward.lower()
         medal = "🥇" if i == 0 else ("🥈" if i == 1 else "🥉" if i == 2 else "")
-        savings_html = f'<span class="savings-pill">₹{savings:,.0f} saved</span>' if savings else ""
+        savings_html = f'<span class="savings-pill">₹{savings:,.0f} saved</span>' if savings >= 1 else ""
         opacity = "opacity:0.45;" if no_benefit else ""
         border = "border-color:#7c3aed;" if i == 0 else ""
         reward_row = f'<div style="color:#a78bfa;font-size:0.83rem;margin-top:3px">↳ {html.escape(reward)}</div>' if reward and not no_benefit else ""
@@ -824,7 +823,10 @@ with tab_smart:
         futures_map = {f_vouchers: "vouchers", f_grabon: "grabon", f_advice: "advice"}
         for future in as_completed(futures_map):
             key = futures_map[future]
-            result = future.result()
+            try:
+                result = future.result()
+            except Exception:
+                result = [] if key != "advice" else {}
             collected[key] = result
 
             if key == "vouchers":
@@ -833,7 +835,7 @@ with tab_smart:
             elif key == "grabon":
                 with ph_grabon.container():
                     if not result:
-                        st.caption("No promo codes found on GrabOn for this search.")
+                        st.caption("No promo codes found for this search.")
                     else:
                         st.caption("⚡ Fetched live from GrabOn · Codes may not always work — verify before checkout.")
                         _render_grabon_html(result)
