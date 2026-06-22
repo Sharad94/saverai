@@ -35,9 +35,36 @@ DEMO_HEADPHONES_CODES = [
 ]
 
 
+DEMO_COFFEE_CODES = [
+    {
+        "merchant": "Starbucks",
+        "code": "SBUX20",
+        "discount": "20% Off",
+        "title": "20% off on all beverages via Starbucks app on weekdays",
+        "url": "https://www.grabon.in/starbucks-coupons/",
+    },
+    {
+        "merchant": "Swiggy",
+        "code": "SWIGGY60",
+        "discount": "₹60 Off",
+        "title": "₹60 off on coffee & beverages orders above ₹199",
+        "url": "https://www.grabon.in/swiggy-coupons/",
+    },
+    {
+        "merchant": "Cafe Coffee Day",
+        "code": "CCD15",
+        "discount": "15% Off",
+        "title": "15% off on CCD app orders — all beverages included",
+        "url": "https://www.grabon.in/cafe-coffee-day-coupons/",
+    },
+]
+
+
 def fetch_live_codes(query: str, max_results: int = 8) -> list[dict]:
     if "headphone" in query.lower() or "boat" in query.lower():
         return DEMO_HEADPHONES_CODES
+    if "coffee" in query.lower() or "starbucks" in query.lower() or "cafe" in query.lower():
+        return DEMO_COFFEE_CODES
     """
     Fetch live coupon codes from GrabOn for a given search query.
     Returns only coupons that have an actual promo code (data-type="cp").

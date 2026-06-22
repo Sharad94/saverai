@@ -36,10 +36,35 @@ DEMO_HEADPHONES_ADVICE = {
 }
 
 
+DEMO_COFFEE_ADVICE = {
+    "best_card_id": None,
+    "ranked_cards": [
+        {
+            "card_id": None,
+            "card_label": "HDFC Bank Diners Club Black Credit Card",
+            "estimated_savings": 120,
+            "reward_label": "10X Reward Points on dining",
+            "reason": "Best dining card — 10X points on all café and restaurant spends, redeemable for flights and hotels.",
+        },
+        {
+            "card_id": None,
+            "card_label": "HDFC Bank Swiggy Credit Card",
+            "estimated_savings": 75,
+            "reward_label": "5% cashback on Swiggy & dining",
+            "reason": "5% cashback on Swiggy orders and dining out — solid pick if ordering coffee via delivery.",
+        },
+    ],
+    "summary": "Use your HDFC Bank Diners Club Black Credit Card — 10X Reward Points on dining.",
+}
+
+
 def advise_best_card(item: str, amount: float, platform: str, cards: list[dict]) -> dict:
     if "headphone" in item.lower() or "boat" in item.lower() or "boAt" in item:
         import time; time.sleep(1)
         return DEMO_HEADPHONES_ADVICE
+    if "coffee" in item.lower() or "starbucks" in item.lower() or "cafe" in item.lower():
+        import time; time.sleep(1)
+        return DEMO_COFFEE_ADVICE
     if not cards:
         return {"best_card_id": None, "ranked_cards": [], "summary": "No cards added yet."}
 
