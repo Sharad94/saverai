@@ -1106,7 +1106,8 @@ CATEGORY_ICONS = {
     "Other online shopping": "🛍️",
 }
 
-with tab_get_card:
+@st.fragment
+def _get_card_tab():
     st.markdown(f"""
 <div style="background:linear-gradient(135deg,{T['card']} 0%,{T['card2']} 100%);
      border:1px solid #ffffff10;border-radius:16px;padding:22px 24px 18px;margin-bottom:20px">
@@ -1147,7 +1148,7 @@ with tab_get_card:
 
     if to_delete is not None:
         st.session_state["spend_rows"].pop(to_delete)
-        st.rerun()
+        st.rerun(scope="fragment")
 
     # Total spend summary
     total = sum(int(r["amt"]) for r in rows if r["amt"] > 0)
@@ -1155,7 +1156,7 @@ with tab_get_card:
     with col_add:
         if st.button("＋ Add category", key="sadd"):
             st.session_state["spend_rows"].append({"cat": SPEND_CATEGORIES[0], "amt": 1000})
-            st.rerun()
+            st.rerun(scope="fragment")
     col_total.markdown(f"""
 <div style="text-align:right;padding-top:6px">
   <span style="color:#64748b;font-size:0.8rem">Monthly total </span>
@@ -1270,3 +1271,6 @@ with tab_get_card:
 </div>"""
                 components.html(f"<div style='background:transparent'>{combo_html}</div>",
                                 height=180 + len(combo.get("split") or []) * 28, scrolling=False)
+
+with tab_get_card:
+    _get_card_tab()
