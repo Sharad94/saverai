@@ -58,7 +58,7 @@ def search_vouchers(query: str, vouchers: list[dict]) -> list[dict]:
     try:
         raw = generate(SEARCH_PROMPT.format(query=query, vouchers_json=json.dumps(slim, indent=2))).strip()
     except Exception:
-        return _keyword_fallback(query, vouchers)
+        return vouchers
 
     raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
     raw = re.sub(r"\s*```$", "", raw, flags=re.MULTILINE)
@@ -66,7 +66,7 @@ def search_vouchers(query: str, vouchers: list[dict]) -> list[dict]:
     try:
         ranked_ids = json.loads(raw.strip())
     except (json.JSONDecodeError, ValueError):
-        return _keyword_fallback(query, vouchers)
+        return vouchers
 
     id_to_voucher = {v["id"]: v for v in vouchers}
     return [id_to_voucher[vid] for vid in ranked_ids if vid in id_to_voucher]
