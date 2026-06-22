@@ -586,11 +586,11 @@ window.addEventListener('load', resize);
 
 # ── HEADER ───────────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=30, show_spinner=False)
 def _cached_cards():
     return get_all_cards()
 
-@st.cache_data(ttl=30)
+@st.cache_data(ttl=30, show_spinner=False)
 def _cached_vouchers(view="active", sort="newest"):
     return get_all_vouchers(view=view, sort=sort)
 
