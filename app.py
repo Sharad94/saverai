@@ -600,8 +600,6 @@ def _hero_stats():
 
 _v_count, _c_count, _exp_count = _hero_stats()
 _stat_style = "background:#ffffff0d;border:1px solid #ffffff12;border-radius:20px;padding:3px 12px;font-size:0.78rem;color:#94a3b8;white-space:nowrap"
-_exp_html = (f'<div style="{_stat_style};color:#f59e0b">⏰ {_exp_count} expiring soon</div>'
-             if _exp_count else "")
 
 st.markdown(f"""
 <div class="hero">
@@ -648,7 +646,6 @@ st.markdown(f"""
         <div style="{_stat_style}">🎟️ {_v_count} vouchers</div>
         <div style="{_stat_style}">💳 {_c_count} cards</div>
       </div>
-      {_exp_html}
     </div>
   </div>
 </div>

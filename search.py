@@ -21,6 +21,19 @@ Example: [3, 7, 1]
 Only return the JSON array, nothing else."""
 
 
+def _keyword_fallback(query: str, vouchers: list[dict]) -> list[dict]:
+    words = set(query.lower().split())
+    def score(v):
+        text = " ".join(filter(None, [
+            v.get("title", ""), v.get("platform", ""),
+            v.get("category", ""), v.get("applicable_on", ""),
+        ])).lower()
+        return sum(1 for w in words if w in text)
+    scored = [(score(v), v) for v in vouchers]
+    matched = [v for s, v in scored if s > 0]
+    return matched if matched else []
+
+
 def search_vouchers(query: str, vouchers: list[dict]) -> list[dict]:
     """
     Semantic search over vouchers using Gemini.
@@ -42,14 +55,18 @@ def search_vouchers(query: str, vouchers: list[dict]) -> list[dict]:
         for v in vouchers
     ]
 
-    raw = generate(SEARCH_PROMPT.format(query=query, vouchers_json=json.dumps(slim, indent=2))).strip()
+    try:
+        raw = generate(SEARCH_PROMPT.format(query=query, vouchers_json=json.dumps(slim, indent=2))).strip()
+    except Exception:
+        return _keyword_fallback(query, vouchers)
+
     raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
     raw = re.sub(r"\s*```$", "", raw, flags=re.MULTILINE)
 
     try:
         ranked_ids = json.loads(raw.strip())
     except (json.JSONDecodeError, ValueError):
-        return vouchers  # fallback: return all unsorted
+        return _keyword_fallback(query, vouchers)
 
     id_to_voucher = {v["id"]: v for v in vouchers}
     return [id_to_voucher[vid] for vid in ranked_ids if vid in id_to_voucher]
