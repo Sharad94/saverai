@@ -179,8 +179,10 @@ def recommend_cards(spend: dict, owned_cards: list[dict]) -> dict:
     import time
     spend_int = {k: int(v) for k, v in spend.items()}
     if all(spend_int.get(k) == v for k, v in DEMO_SPEND.items()):
+        import time; time.sleep(1)
         return DEMO_RESULT
     if all(spend_int.get(k) == v for k, v in DEMO_SPEND_2.items()):
+        import time; time.sleep(1)
         return DEMO_RESULT_2
 
     spend_profile = "\n".join(
