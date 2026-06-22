@@ -501,14 +501,14 @@ def _render_voucher_card(v: dict, highlight: bool = False, key_prefix: str = "v"
     _, col_used, col_del = st.columns([10, 1, 1])
     if not v.get("is_used"):
         if col_used.button("✔", key=f"{key_prefix}_used_{vid}", help="Mark as used"):
-            mark_used(vid)
+            mark_used(vid); _invalidate_cache()
             if "advisor_results" in st.session_state:
                 ar = st.session_state["advisor_results"]
                 ar["vouchers"] = [x for x in ar["vouchers"] if x["id"] != vid]
                 st.session_state["advisor_used_rain"] = True
             st.rerun()
     if col_del.button("🗑", key=f"{key_prefix}_del_{vid}", help="Delete voucher"):
-        delete_voucher(vid)
+        delete_voucher(vid); _invalidate_cache()
         if "advisor_results" in st.session_state:
             ar = st.session_state["advisor_results"]
             ar["vouchers"] = [x for x in ar["vouchers"] if x["id"] != vid]
@@ -579,12 +579,25 @@ window.addEventListener('load', resize);
 
     _, col_del = st.columns([5, 1])
     if col_del.button("🗑", key=f"{key_prefix}del_{c['id']}", help="Delete card"):
-        delete_card(c["id"])
+        delete_card(c["id"]); _invalidate_cache()
         st.rerun()
 
 
 
 # ── HEADER ───────────────────────────────────────────────────────────────────
+
+@st.cache_data(ttl=30)
+def _cached_cards():
+    return get_all_cards()
+
+@st.cache_data(ttl=30)
+def _cached_vouchers(view="active", sort="newest"):
+    return get_all_vouchers(view=view, sort=sort)
+
+def _invalidate_cache():
+    _cached_cards.clear()
+    _cached_vouchers.clear()
+    _hero_stats.clear()
 
 @st.cache_data(ttl=60)
 def _hero_stats():
@@ -792,8 +805,8 @@ with tab_smart:
 
     if submitted and item:
         st.session_state.pop("advisor_results", None)
-        cards = get_all_cards()
-        vouchers = get_all_vouchers(view="active")
+        cards = _cached_cards()
+        vouchers = _cached_vouchers(view="active")
         query = f"{item} {platform}".strip()
 
         ex = ThreadPoolExecutor(max_workers=3)
@@ -923,6 +936,7 @@ with tab_add_voucher:
                         st.error(f"Failed to save: {e}")
                         st.stop()
 
+                _invalidate_cache()
                 st.session_state["voucher_saved"] = saved
                 st.session_state["_upload_nonce"] = _upload_nonce + 1
                 st.rerun()
@@ -956,6 +970,7 @@ with tab_add_voucher:
                     st.error(f"Failed to save: {e}")
                     st.stop()
 
+            _invalidate_cache()
             st.session_state["voucher_saved"] = saved
             st.session_state["_upload_nonce"] = _upload_nonce + 1
             st.rerun()
@@ -997,6 +1012,7 @@ with tab_add_card:
                 st.error(f"Failed to save: {e}")
                 st.stop()
 
+        _invalidate_cache()
         st.session_state["card_saved"] = saved_card
         st.rerun()
 
@@ -1012,7 +1028,7 @@ with tab_vouchers:
                            horizontal=True, label_visibility="collapsed")
 
     sort_key = "newest" if sort_by == "Newest first" else "expiry"
-    vouchers = get_all_vouchers(view=view.lower(), sort=sort_key)
+    vouchers = _cached_vouchers(view=view.lower(), sort=sort_key)
 
     if not vouchers:
         st.markdown(f"""
@@ -1029,7 +1045,7 @@ with tab_vouchers:
 
 # ── MY CARDS ──────────────────────────────────────────────────────────────────
 with tab_cards:
-    cards = get_all_cards()
+    cards = _cached_cards()
     if not cards:
         st.markdown(f"""
 <div style="background:{T['card']};border:1px solid #ffffff10;border-radius:14px;
@@ -1158,7 +1174,7 @@ with tab_get_card:
 
         with st.spinner("🧠 Analysing your spend profile..."):
             try:
-                owned = [] if is_demo else get_all_cards()
+                owned = [] if is_demo else _cached_cards()
                 result = recommend_cards(spend, owned)
             except Exception as e:
                 st.error(f"Gemini error — please try again in a few seconds. ({type(e).__name__})")
