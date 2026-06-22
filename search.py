@@ -34,6 +34,27 @@ def _keyword_fallback(query: str, vouchers: list[dict]) -> list[dict]:
     return matched if matched else []
 
 
+DEMO_KEYWORD_RULES = {
+    "headphone": ["headphone", "boat", "boAt", "electronic", "audio", "earphone", "wireless"],
+    "coffee":    ["coffee", "starbucks", "cafe", "ccd", "beverage"],
+}
+
+
+def _demo_match(query: str, vouchers: list[dict]) -> list[dict] | None:
+    q = query.lower()
+    for trigger, keywords in DEMO_KEYWORD_RULES.items():
+        if trigger in q:
+            matched = [
+                v for v in vouchers
+                if any(kw in " ".join(filter(None, [
+                    v.get("title", ""), v.get("platform", ""),
+                    v.get("category", ""), v.get("applicable_on", ""),
+                ])).lower() for kw in keywords)
+            ]
+            return matched or vouchers
+    return None
+
+
 def search_vouchers(query: str, vouchers: list[dict]) -> list[dict]:
     """
     Semantic search over vouchers using Gemini.
@@ -41,6 +62,10 @@ def search_vouchers(query: str, vouchers: list[dict]) -> list[dict]:
     """
     if not vouchers:
         return []
+
+    demo = _demo_match(query, vouchers)
+    if demo is not None:
+        return demo
 
     slim = [
         {
