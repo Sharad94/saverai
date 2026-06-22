@@ -739,11 +739,10 @@ def _render_card_advice(advice: dict) -> None:
     st.success(advice.get("summary", ""))
     cards_html = ""
     for i, rec in enumerate(ranked):
-        savings = float(rec.get("estimated_savings") or 0)
         reward = rec.get("reward_label", "")
         no_benefit = not reward or "no specific" in reward.lower()
         medal = "🥇" if i == 0 else ("🥈" if i == 1 else "🥉" if i == 2 else "")
-        savings_html = f'<span class="savings-pill">₹{savings:,.0f} saved</span>' if savings >= 1 else ""
+        savings_html = ""
         opacity = "opacity:0.45;" if no_benefit else ""
         border = "border-color:#7c3aed;" if i == 0 else ""
         reward_row = f'<div style="color:#a78bfa;font-size:0.83rem;margin-top:3px">↳ {html.escape(reward)}</div>' if reward and not no_benefit else ""
