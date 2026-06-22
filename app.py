@@ -1023,7 +1023,7 @@ with tab_vouchers:
         view = st.radio("Show", ["Active", "Used", "Expired"],
                         horizontal=True, label_visibility="collapsed")
     with col_sort:
-        sort_by = st.radio("Sort", ["By expiry", "Newest first"],
+        sort_by = st.radio("Sort", ["Newest first", "By expiry"],
                            horizontal=True, label_visibility="collapsed")
 
     sort_key = "newest" if sort_by == "Newest first" else "expiry"
