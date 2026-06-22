@@ -841,7 +841,7 @@ with tab_smart:
 
             if key == "vouchers":
                 with ph_vouchers.container():
-                    _render_advisor_vouchers(result)
+                    _render_advisor_vouchers(result[:3])
             elif key == "grabon":
                 with ph_grabon.container():
                     if not result:
@@ -867,7 +867,7 @@ with tab_smart:
             _money_rain()
 
         _section_header("🎟️", "Your Saved Vouchers", "Matching vouchers from your vault")
-        _render_advisor_vouchers(cached["vouchers"])
+        _render_advisor_vouchers(cached["vouchers"][:3])
 
         _section_header("💳", "Best Card to Use", "Ranked by savings for this purchase")
         _render_card_advice(cached["advice"])
