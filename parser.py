@@ -111,10 +111,10 @@ def parse_voucher_text(text: str) -> dict:
     """Parse voucher details from free-form text using Gemini."""
     t = text.lower()
     if ("boat" in t or "boAt" in text) and ("500" in t or "top seller" in t or "az5p" in t):
-        import time; time.sleep(2)
+        import time; time.sleep(1)
         return dict(_DEMO_BOAT_VOUCHER)
     if "starbucks" in t and ("300" in t or "coffee" in t):
-        import time; time.sleep(2)
+        import time; time.sleep(1)
         return dict(_DEMO_STARBUCKS_VOUCHER)
     prompt = _TEXT_PARSE_TEMPLATE.format(today=date.today().isoformat(), text=text)
     result = _extract_json(generate(prompt))
