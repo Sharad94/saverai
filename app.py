@@ -784,7 +784,8 @@ def _render_advisor_vouchers(vouchers: list[dict]) -> None:
         _render_voucher_card(v, highlight=(i == 0), key_prefix="adv")
 
 
-with tab_smart:
+@st.fragment
+def _smart_advisor_tab():
     st.markdown(f"""
 <div style="background:linear-gradient(135deg,{T['card']} 0%,{T['card2']} 100%);
      border:1px solid #ffffff10;border-radius:16px;padding:22px 24px 18px;margin-bottom:16px">
@@ -802,8 +803,15 @@ with tab_smart:
         platform = st.text_input("Platform", placeholder="🏪  Platform or merchant (optional)", label_visibility="collapsed")
         submitted = st.form_submit_button("Find best card & vouchers →", type="primary", use_container_width=True)
 
+    # Two-pass pattern: on submit, clear state and rerun so old results vanish instantly
     if submitted and item:
         st.session_state.pop("advisor_results", None)
+        st.session_state["_advisor_pending"] = (item, platform)
+        st.rerun(scope="fragment")
+
+    pending = st.session_state.pop("_advisor_pending", None)
+    if pending:
+        item, platform = pending
         cards = _cached_cards()
         vouchers = _cached_vouchers(view="active")
         query = f"{item} {platform}".strip()
@@ -881,6 +889,10 @@ with tab_smart:
 
         _section_header("🔍", "Search More Online")
         _render_online_links()
+
+
+with tab_smart:
+    _smart_advisor_tab()
 
 
 # ── ADD VOUCHER ───────────────────────────────────────────────────────────────
