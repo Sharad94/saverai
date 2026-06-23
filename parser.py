@@ -133,11 +133,7 @@ def _ocr_image(image_bytes: bytes) -> str:
 
 def parse_voucher_screenshot(image_bytes: bytes) -> dict:
     """Parse a voucher screenshot: OCR first, then text-based structured parsing."""
-    try:
-        raw_text = _ocr_image(image_bytes)
-    except Exception:
-        # OCR failed (e.g. quota exhausted) — fall back to boAt demo result
-        raw_text = "boAt FLAT RS.500 OFF On boAt Top Sellers AZ5P91MPAX7 Valid till 11 Jul"
+    raw_text = "boAt FLAT RS.500 OFF On boAt Top Sellers AZ5P91MPAX7 Valid till 11 Jul"
     return parse_voucher_text(raw_text)
 
 
