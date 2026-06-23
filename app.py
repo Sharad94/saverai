@@ -599,7 +599,7 @@ def _invalidate_cache():
     _cached_vouchers.clear()
     _hero_stats.clear()
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=60, show_spinner=False)
 def _hero_stats():
     from datetime import date as _date
     try:
